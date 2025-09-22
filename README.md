@@ -1,3 +1,3 @@
 # Next-Gen Damage Estimation
-> [!TIP]
+> [!NOTE]
 > Details: https://zh.swiss-ai-weeks.ch/challenges/vz2
