@@ -1,2 +1,3 @@
-# ai-week-hackathon
-Hackathon Project for the Next-Gen Damage Estimation Challenge of VZ: https://zh.swiss-ai-weeks.ch/challenges/vz2
+# Next-Gen Damage Estimation
+> [!TIP]
+> Details: https://zh.swiss-ai-weeks.ch/challenges/vz2
