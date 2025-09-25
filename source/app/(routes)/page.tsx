@@ -1,4 +1,5 @@
 import Admin from "@/components/admin/admin";
+import Process from "@/components/process/process";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
@@ -8,13 +9,13 @@ export default function Home() {
         <div className="py-10 font-bold text-3xl">
           <h1>Next-Gen Damage Estimation</h1>
         </div>
-        <Tabs defaultValue="cases" className="w-[1000px]">
+        <Tabs defaultValue="cases" className="w-full max-w-[1000px]">
           <TabsList>
             <TabsTrigger value="cases">Cases</TabsTrigger>
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
           <TabsContent value="cases" className="p-2">
-            Decide on cases
+            <Process />
           </TabsContent>
           <TabsContent value="admin" className="p-2">
             <Admin />

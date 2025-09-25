@@ -54,14 +54,7 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
       props.reset();
       setSubmitting(false);
     },
-    [
-      onSubmit,
-      description,
-      props.isSuccess,
-      props.onUpload,
-      props.assets,
-      props,
-    ]
+    [onSubmit, description, props]
   );
 
   return (
