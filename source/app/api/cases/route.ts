@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     // Map incoming payload to DB insert shape
     const payload: NextGenDamage = {
       description: body.description,
-      category: "TEST",
+      category: body.category,
       case_images: body.case_images.map(image => {
         return {
             image_id: image.imageId,
