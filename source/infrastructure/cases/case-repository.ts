@@ -29,7 +29,7 @@ export type CaseImage = {
 }
 
 const TABLE = "next-gen-damage";
-const IMAGE_TABLE = "case-image";
+const IMAGE_TABLE = "case-images";
 const SCHEMA = "public";
 
 export class CaseRepository {
@@ -38,9 +38,24 @@ export class CaseRepository {
 
     const { data, error } = await supabase
       .from(TABLE)
-      .select("*")
+      .select(`
+        id,
+        description,
+        category,
+        estimation,
+        vector,
+        case_status,
+        similar_cases,
+        created_at,
+        case_images:"${IMAGE_TABLE}" (
+          id,
+          case_id,
+          image_id,
+          image_public_url
+        )
+      `)
       .eq("id", id)
-      .single(); // ensures exactly 1 row or error
+      .single();
 
     if (error) {
       throw new Error(`Failed to fetch case: ${error.message}`);
@@ -54,7 +69,22 @@ export class CaseRepository {
 
     const { data, error } = await supabase
       .from(TABLE)
-      .select("*")
+      .select(`
+        id,
+        description,
+        category,
+        estimation,
+        vector,
+        case_status,
+        similar_cases,
+        created_at,
+        case_images:"${IMAGE_TABLE}" (
+          id,
+          case_id,
+          image_id,
+          image_public_url
+        )
+      `)
       .order("created_at", { ascending: false });
 
     if (error) {
