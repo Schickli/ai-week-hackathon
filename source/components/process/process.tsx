@@ -9,15 +9,6 @@ import { DeclineDialog } from "./decline-dialog";
 import { RefreshCcw, X, Check, TrendingUp } from "lucide-react"
 import { GetCaseResponse } from "@/infrastructure/cases/case-repository";
 
-
-// Placeholder data and functions
-const mockCase = {
-  id: 1,
-  imageUrl: "https://aexkfdacfobwtdqwrtid.supabase.co/storage/v1/object/public/damage-images/v0/Download%20(1).jpg",
-  description: "Front bumper damage after minor collision.",
-  aiCostEstimate: "1,200.-",
-};
-
 const mockSimilarCases = [
   {
     id: 2,
@@ -42,17 +33,16 @@ const mockSimilarCases = [
   }
 ];
 
-async function handleDecision(status: "approve" | "deny") {
-  // Replace with actual API endpoint
-  await fetch("/api/case/judge", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ caseId: mockCase.id, status }),
-  });
-  // TODO: Refresh data or show next case
-}
-
 export default function Process() {
+  const handleDecision = async (status: "approve" | "declined") => {
+    if (!caseData) return;
+    await fetch(`/api/cases/${caseData.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ case_status: status === "approve" ? "approved" : "declined" }),
+    });
+    await handleRefresh()();
+  };
   const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
   const declineOptions = [
     { label: "Image not clear", value: "image_not_clear" },
@@ -60,9 +50,9 @@ export default function Process() {
     { label: "Not a damage case", value: "not_damage_case" },
     { label: "Other", value: "other" },
   ];
-  const handleDecline = (reason: string) => {
+  const handleDecline = async (reason: string) => {
     setDeclineDialogOpen(false);
-    handleDecision("deny"); // TODO: pass reason if needed
+    await handleDecision("declined");
   };
   const [loading, setLoading] = useState(false);
   const [caseData, setCaseData] = useState<GetCaseResponse | null>(null);
@@ -72,16 +62,19 @@ export default function Process() {
 
   const handleRefresh = () => async () => {
     setLoading(true);
-    const response = await fetch("/api/cases");
-    const data: GetCaseResponse[] = await response.json();
-    setJudgedCount(data.filter((c) => c.case_status === "approved" || c.case_status === "declined").length);
-    setUnjudgedCount(data.filter((c) => c.case_status !== "approved" && c.case_status !== "declined").length);
-    const unjudgedCases = data.filter((c) => c.case_status !== "approved" && c.case_status !== "declined");
-    unjudgedCases.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    if (unjudgedCases.length > 0) {
-      setCaseData(unjudgedCases[0]);
-    } else {
-      setCaseData(null);
+    try {
+      const response = await fetch("/api/cases");
+      const data: GetCaseResponse[] = await response.json();
+      setJudgedCount(data.filter((c) => c.case_status === "approved" || c.case_status === "declined").length);
+      setUnjudgedCount(data.filter((c) => c.case_status !== "approved" && c.case_status !== "declined").length);
+      const unjudgedCases = data.filter((c) => c.case_status !== "approved" && c.case_status !== "declined");
+      unjudgedCases.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      if (unjudgedCases.length > 0) {
+        setCaseData(unjudgedCases[0]);
+      } else {
+        setCaseData(null);
+      }
+    } catch (err) {
     }
     setLoading(false);
   }
@@ -150,7 +143,6 @@ export default function Process() {
                 </div>
               ) : caseData ? (
                 <>
-                  {/* shadcn/ui carousel for images */}
                   <div className="w-full min-h-[18rem] flex flex-col">
                     <div className="relative w-full">
                       <Carousel className="w-full h-72">
@@ -187,7 +179,6 @@ export default function Process() {
                       <span className="text-2xl font-extrabold text-blue-600" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {caseData.estimation !== null ? `${caseData.estimation}.-` : 'No estimate'}
                       </span>
-                      {/* Confidence score placeholder, update property name as needed */}
                       {typeof caseData.estimation === 'number' && (
                         <span className="text-lg font-semibold text-green-600 bg-green-100 px-3 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
                           {`Confidence: ${(1 * 100).toFixed(1)}%`}
@@ -214,7 +205,7 @@ export default function Process() {
                 variant="outline"
                 size="icon"
                 className="w-16 h-16 rounded-full border-2 border-green-500 text-green-500 transition-all duration-200 hover:scale-110 hover:bg-green-500 hover:text-white hover:border-green-600 focus:outline-none shadow-lg"
-                onClick={() => handleDecision("approve")}
+                onClick={async () => await handleDecision("approve")}
                 aria-label="Approve"
                 disabled={!caseData}
               >
