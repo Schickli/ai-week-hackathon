@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Url } from "url";
 import { UploadDamageImageSubmitPayload } from "@/components/admin/upload-damage-image";
-import { CaseRepository, NextGenDamage } from "@/infrastructure/cases/case-repository";
+import { CaseRepository, GetCaseResponse, NextGenDamage } from "@/infrastructure/cases/case-repository";
 import { processCase } from "@/services/process-case";
 
 type StoreResponse = { 
@@ -45,5 +45,14 @@ export async function POST(req: Request) {
 }
 // Optional: block other methods
 export async function GET() {
-  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+  try {
+    const data: GetCaseResponse[] = await CaseRepository.getAll();
+
+    return NextResponse.json<GetCaseResponse[]>(data);
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message ?? "Unknown error" },
+      { status: 500 }
+    );
+  }
 }
