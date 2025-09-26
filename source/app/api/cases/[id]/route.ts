@@ -1,13 +1,10 @@
 import { CaseRepository, GetCaseResponse } from "@/infrastructure/cases/case-repository";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/cases/[id]
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest,  { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const data: GetCaseResponse | null = await CaseRepository.get(id);
 
@@ -30,10 +27,10 @@ export async function GET(
 // PATCH /api/cases/[id]
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     if (!body.case_status) {

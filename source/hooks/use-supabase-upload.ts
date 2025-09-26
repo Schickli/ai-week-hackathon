@@ -166,7 +166,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     if (responseSuccesses.length > 0) {
       setAssets((prev) => {
         const map = new Map(prev.map((a) => [a.key, a]))
-        responseSuccesses.forEach((r: any) => {
+        responseSuccesses.forEach((r) => {
           map.set(r.key, { name: r.name, key: r.key, publicUrl: r.publicUrl })
         })
         return Array.from(map.values())
@@ -178,9 +178,9 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     return {
       errors: responseErrors,
       successes: responseSuccesses.map((r) => r.name),
-      assets: responseSuccesses.map((r: any) => ({ name: r.name, key: r.key, publicUrl: r.publicUrl })),
+      assets: responseSuccesses.map((r) => ({ name: r.name, key: r.key, publicUrl: r.publicUrl })),
     }
-  }, [files, path, bucketName, errors, successes])
+  }, [files, path, bucketName, errors, successes, cacheControl, publicBucket, upsert])
 
   const reset = useCallback(() => {
     // Revoke previews to avoid memory leaks
@@ -212,7 +212,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
         setFiles(newFiles)
       }
     }
-  }, [files.length, setFiles, maxFiles])
+  }, [files.length, setFiles, maxFiles, files])
 
   return {
     files,

@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Progress } from "../ui/progress";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "../ui/carousel";
 import { DeclineDialog } from "./decline-dialog";
-import { RefreshCcw, X, Check, TrendingUp } from "lucide-react"
+import { RefreshCcw, Check, TrendingUp } from "lucide-react"
 import { GetCaseResponse } from "@/infrastructure/cases/case-repository";
+import Image from "next/image";
+import CaseImageCarousel from "./image-carousel";
 
 const mockSimilarCases = [
   {
@@ -50,13 +51,13 @@ export default function Process() {
     { label: "Not a damage case", value: "not_damage_case" },
     { label: "Other", value: "other" },
   ];
-  const handleDecline = async (reason: string) => {
+  const handleDecline = async () => {
     setDeclineDialogOpen(false);
     await handleDecision("declined");
   };
   const [loading, setLoading] = useState(false);
   const [caseData, setCaseData] = useState<GetCaseResponse | null>(null);
-  const [similarCases, setSimilarCases] = useState(mockSimilarCases);
+  const [similarCases] = useState(mockSimilarCases);
   const [judgedCount, setJudgedCount] = useState(0);
   const [unjudgedCount, setUnjudgedCount] = useState(0);
 
@@ -75,6 +76,7 @@ export default function Process() {
         setCaseData(null);
       }
     } catch (err) {
+      console.log(err)
     }
     setLoading(false);
   }
@@ -108,7 +110,9 @@ export default function Process() {
               <ul className="space-y-6">
                 {similarCases.slice(0, 3).map((c) => (
                   <li key={c.id} className="flex flex-col items-center p-0 rounded-xWl bg-white shadow-sm hover:shadow-md transition-shadow">
-                    <img
+                    <Image
+                      width={100}
+                      height={100}
                       src={c.imageUrl}
                       alt="Similar case"
                       className="w-full h-32 object-cover rounded-t-xl"
@@ -143,26 +147,7 @@ export default function Process() {
                 </div>
               ) : caseData ? (
                 <>
-                  <div className="w-full min-h-[25rem] flex flex-col">
-                    <div className="relative w-full">
-                      <Carousel className="w-full h-72">
-                        <CarouselContent>
-                          {(caseData.case_images ?? []).map((img, idx) => (
-                            <CarouselItem key={img.id || idx} className="h-72">
-                              <img
-                                src={img.image_public_url}
-                                alt={`Damage ${idx + 1}`}
-                                className="w-full h-72 object-cover rounded-t-2xl shadow-lg border-none"
-                                style={{ fontFamily: 'Poppins, sans-serif' }}
-                              />
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                        <CarouselPrevious />
-                        <CarouselNext />
-                      </Carousel>
-                    </div>
-                  </div>
+                  <CaseImageCarousel images={caseData.case_images ?? []} />
                   <div className="flex flex-col items-start px-8 py-6">
                     <div className="mb-2 flex items-center justify-between w-full">
                       <span className="text-xl font-bold text-gray-800 tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
