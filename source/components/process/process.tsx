@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Progress } from "../ui/progress";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "../ui/carousel";
 import { DeclineDialog } from "./decline-dialog";
 import { RefreshCcw, Check, TrendingUp } from "lucide-react"
 import { GetCaseResponse } from "@/infrastructure/cases/case-repository";
