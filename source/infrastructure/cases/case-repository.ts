@@ -19,7 +19,7 @@ export type NextGenDamageInserted = {
   created_at: Date
 };
 
-const TABLE = "nest-gen-damage";
+const TABLE = "next-gen-damage";
 const SCHEMA = "public";
 
 export class CaseRepository {
