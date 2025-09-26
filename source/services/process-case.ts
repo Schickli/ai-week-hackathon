@@ -1,6 +1,6 @@
-import { CaseRepository, NextGenDamage, NextGenDamageInserted } from "@/infrastructure/cases/case-repository";
+import { CaseRepository, NextGenDamage } from "@/infrastructure/cases/case-repository";
 
-export async function processCase(payload: NextGenDamage): Promise<NextGenDamageInserted> {
+export async function processCase(payload: NextGenDamage) {
     // Generate Embeddings
     generateEmbeddings();
 
@@ -12,8 +12,6 @@ export async function processCase(payload: NextGenDamage): Promise<NextGenDamage
 
     // Save to DB if flag is not set
     return await saveToDB(payload);
-
-    // return null; return the whole case object (for benchmarking)
 }
 
 async function generateEmbeddings() {
@@ -28,7 +26,7 @@ async function promptAIForEstimation() {
     // TODO
 }
 
-async function saveToDB(data: NextGenDamage): Promise<NextGenDamageInserted> {
+async function saveToDB(data: NextGenDamage) {
     return await CaseRepository.insert(data)
 }
 

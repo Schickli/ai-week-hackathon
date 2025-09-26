@@ -18,6 +18,7 @@ type UploadDamageImageSubmitPayload = {
   category: string;
   imageId: string;
   publicUrl: string;
+  saveToDb?: boolean;
 };
 
 type UploadDamageImageProps = {
