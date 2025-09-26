@@ -148,20 +148,59 @@ async function callApi(entry: CaseBenchmarkInput): Promise<number | null> {
     return null;
   }
 }
-
+// REPLACE computeStats with:
 function computeStats(results: CaseBenchmarkResult[]) {
-  const withBoth = results.filter(r => r.historicalAmount != null && r.apiAmount != null && r.errorPct != null);
+  const withBoth = results.filter(
+    r => r.historicalAmount != null && r.apiAmount != null && r.errorPct != null
+  );
   if (withBoth.length === 0) {
-    return { count: 0, meanErrorPct: null, stdDevErrorPct: null, mape: null };
+    return {
+      count: 0,
+      meanErrorPct: null,
+      stdDevErrorPct: null,
+      mape: null,
+      overCount: 0,
+      underCount: 0,
+      overShare: null,
+      underShare: null,
+      meanOverErrorPct: null,
+      meanUnderErrorPct: null,
+      biasDirection: 'neutral' as 'over' | 'under' | 'neutral',
+    };
   }
-  const errors = withBoth.map(r => r.errorPct!); // signed
+
+  const errors = withBoth.map(r => r.errorPct!); // signed %
   const absPercents = withBoth.map(r => Math.abs(r.errorPct!));
   const meanErrorPct = errors.reduce((a, b) => a + b, 0) / errors.length;
   const variance = errors.reduce((a, b) => a + Math.pow(b - meanErrorPct, 2), 0) / errors.length;
   const stdDevErrorPct = Math.sqrt(variance);
-  // MAPE = mean absolute percentage error (|api - hist|/hist * 100)
   const mape = absPercents.reduce((a, b) => a + b, 0) / absPercents.length;
-  return { count: withBoth.length, meanErrorPct, stdDevErrorPct, mape };
+
+  const overs = errors.filter(e => e > 0);
+  const unders = errors.filter(e => e < 0);
+  const overCount = overs.length;
+  const underCount = unders.length;
+  const overShare = overCount / errors.length;
+  const underShare = underCount / errors.length;
+  const meanOverErrorPct = overCount ? overs.reduce((a, b) => a + b, 0) / overCount : null;
+  const meanUnderErrorPct = underCount ? unders.reduce((a, b) => a + b, 0) / underCount : null;
+
+  const biasDirection: 'over' | 'under' | 'neutral' =
+    meanErrorPct > 0.000001 ? 'over' : meanErrorPct < -0.000001 ? 'under' : 'neutral';
+
+  return {
+    count: withBoth.length,
+    meanErrorPct,
+    stdDevErrorPct,
+    mape,
+    overCount,
+    underCount,
+    overShare,
+    underShare,
+    meanOverErrorPct,
+    meanUnderErrorPct,
+    biasDirection,
+  };
 }
 
 async function main() {
@@ -171,7 +210,7 @@ async function main() {
   const inputs = await buildBenchmarkInputs(rows);
   console.log(`Gefilterte Testfälle: ${inputs.length}`);
 
-  const parallel = Number(process.env.BENCH_PARALLEL || '1');
+  const parallel = Number(process.env.BENCH_PARALLEL || '4');
   const queue = [...inputs];
   const results: CaseBenchmarkResult[] = [];
 
@@ -193,13 +232,26 @@ async function main() {
   await Promise.all(Array.from({ length: parallel }, () => worker()));
 
   const stats = computeStats(results);
-  console.log('\n=== Benchmark Zusammenfassung ===');
-  console.log(`Fälle mit Vergleich: ${stats.count}`);
-  if (stats.count > 0) {
-    console.log(`Mittlerer Fehler (signed %): ${stats.meanErrorPct?.toFixed(2)}%`);
-    console.log(`Standardabweichung Fehler (%): ${stats.stdDevErrorPct?.toFixed(2)}%`);
-    console.log(`MAPE (%): ${stats.mape?.toFixed(2)}%`);
-  }
+console.log('\n=== Benchmark Zusammenfassung ===');
+console.log(`Fälle mit Vergleich: ${stats.count}`);
+if (stats.count > 0) {
+  const dirLabel =
+    stats.biasDirection === 'over' ? 'ÜBERSCHÄTZT' :
+    stats.biasDirection === 'under' ? 'UNTERSCHÄTZT' : 'NEUTRAL';
+  console.log(
+    `Durchschnittliche Abweichung (signed %): ${stats.meanErrorPct!.toFixed(2)}%  -> ${dirLabel}`
+  );
+  console.log(`Standardabweichung Fehler (%): ${stats.stdDevErrorPct!.toFixed(2)}%`);
+  console.log(`MAPE (%): ${stats.mape!.toFixed(2)}%`);
+  console.log(
+    `Bias-Verteilung: over=${stats.overCount} (${(stats.overShare!*100).toFixed(1)}%), ` +
+    `under=${stats.underCount} (${(stats.underShare!*100).toFixed(1)}%)`
+  );
+  console.log(
+    `Mittlere Über-Schätzung (nur >0): ${stats.meanOverErrorPct == null ? 'n/a' : stats.meanOverErrorPct.toFixed(2) + '%'}` +
+    ` | Mittlere Unter-Schätzung (nur <0): ${stats.meanUnderErrorPct == null ? 'n/a' : stats.meanUnderErrorPct.toFixed(2) + '%'}`
+  );
+}
 
   // Optionaler Report
   const args = process.argv.slice(2);
