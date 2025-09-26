@@ -22,7 +22,15 @@ import { createReadStream } from 'fs';
 import { resolve } from 'path';
 import { parse } from 'csv-parse';
 import fetch from 'node-fetch';
-import { testcases, buildImagePublicUrl, buildImageId } from './testcases.js';
+import { buildImageId, buildImagePublicUrl, testcases } from './testcases.js';
+
+import { readdir } from 'fs/promises';
+import { join, resolve as resolvePath } from 'path';
+import { pathToFileURL } from 'url';
+
+// ADD: local image root (folder "data" contains all files; images are under data/<FOLDER>)
+const LOCAL_IMAGE_ROOT = resolvePath(process.cwd(), '../data');
+
 
 interface CsvRowRaw {
   Hergang: string;
@@ -38,6 +46,10 @@ interface CaseBenchmarkInput {
   description: string;
   category: string | null;
   historicalAmount: number | null;
+  caseImages: CaseImage[];
+}
+
+interface CaseImage {
   publicUrl: string;
   imageId: string;
 }
@@ -75,23 +87,40 @@ async function loadCsv(): Promise<CsvRowRaw[]> {
   });
 }
 
-function buildBenchmarkInputs(rows: CsvRowRaw[]): CaseBenchmarkInput[] {
+async function buildBenchmarkInputs(rows: CsvRowRaw[]): Promise<CaseBenchmarkInput[]> {
   const wantedIds = new Set(testcases.map(t => t.id));
-  return rows
-    .map(r => {
-      const kundenNr = Number(r['Kunden-Nr.']);
-      if (!Number.isFinite(kundenNr)) return null;
-      return {
-        kundenNr,
-        description: r.Hergang?.trim() ?? '',
-        category: r.SPARTE?.trim() || null,
-        historicalAmount: parseAmount(r['TOTAL SCHADENAUFWAND']),
-        publicUrl: buildImagePublicUrl(kundenNr),
-        imageId: buildImageId(kundenNr),
-      } as CaseBenchmarkInput;
-    })
-    .filter((r): r is CaseBenchmarkInput => !!r && wantedIds.has(r.kundenNr));
+  const candidates = rows.map(async r => {
+    const kundenNr = Number(r['Kunden-Nr.']);
+    if (!Number.isFinite(kundenNr)) return null;
+
+    return {
+      kundenNr,
+      description: r.Hergang?.trim() ?? '',
+      category: r.SPARTE?.trim() || null,
+      historicalAmount: parseAmount(r['TOTAL SCHADENAUFWAND']),
+      caseImages: await buildCaseImages(kundenNr), // CHANGED
+    } as CaseBenchmarkInput;
+  });
+
+  const resolved = await Promise.all(candidates);
+  return resolved.filter((r): r is CaseBenchmarkInput => !!r && wantedIds.has(r.kundenNr));
 }
+
+async function buildCaseImages(kundenNr: number): Promise<CaseImage[]> {
+  const files = await listCustomerImages(kundenNr);
+  return files.map(name => {
+
+    const match = name.match(/^(\d+)(?: - (\d+))?\.(?:jpe?g)$/i);
+    if (!match) throw new Error(`Unexpected filename format: ${name}`);
+    const index = match[2] ? parseInt(match[2], 10) : 0;
+
+    return {
+      imageId: buildImageId(kundenNr, index),
+      publicUrl: buildImagePublicUrl(kundenNr, index),
+    };
+  });
+}
+
 
 async function callApi(entry: CaseBenchmarkInput): Promise<number | null> {
   try {
@@ -101,12 +130,7 @@ async function callApi(entry: CaseBenchmarkInput): Promise<number | null> {
       body: JSON.stringify({
         description: entry.description,
         category: entry.category ?? '',
-        case_images: [
-          {
-            imageId: entry.imageId,
-            publicUrl: entry.publicUrl,
-          },
-        ],
+        case_images: entry.caseImages,
         // Wichtig: damit wir keine DB Writes auslösen (Benchmark), korrektes Feld nach Frontend-Typ:
         saveToDb: false,
       }),
@@ -144,10 +168,10 @@ async function main() {
   console.log('Lade CSV...');
   const rows = await loadCsv();
   console.log(`CSV Zeilen gesamt: ${rows.length}`);
-  const inputs = buildBenchmarkInputs(rows);
+  const inputs = await buildBenchmarkInputs(rows);
   console.log(`Gefilterte Testfälle: ${inputs.length}`);
 
-  const parallel = Number(process.env.BENCH_PARALLEL || '4');
+  const parallel = Number(process.env.BENCH_PARALLEL || '1');
   const queue = [...inputs];
   const results: CaseBenchmarkResult[] = [];
 
@@ -188,6 +212,27 @@ async function main() {
     console.log(`Report geschrieben: ${reportPath}`);
   }
 }
+
+async function listCustomerImages(kundenNr: number): Promise<string[]> {
+  const dirPath = LOCAL_IMAGE_ROOT; // e.g., data/testing
+  const entries = await readdir(dirPath, { withFileTypes: true });
+
+  const rx = new RegExp(`^${kundenNr}(?: - (\\d+))?\\.(jpe?g)$`, 'i');
+  const files = entries
+    .filter(e => e.isFile())
+    .map(e => e.name)
+    .filter(name => rx.test(name))
+    .sort((a, b) => {
+      const ma = a.match(rx)!;
+      const mb = b.match(rx)!;
+      const ia = ma[1] ? parseInt(ma[1], 10) : 0;
+      const ib = mb[1] ? parseInt(mb[1], 10) : 0;
+      return ia - ib; // base image first, then - 1, - 2, ...
+    });
+
+  return files; // e.g., ["123.jpg", "123 - 1.jpg"]
+}
+
 
 main().catch(e => {
   console.error('Benchmark Fehler', e);
