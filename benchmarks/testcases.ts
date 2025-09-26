@@ -1,5 +1,8 @@
 // Liste von Testfällen (Kunden-/Schadennummern) die im Benchmark gegen die API geprüft werden sollen.
 // IDs müssen den Werten in der CSV-Spalte "Kunden-Nr." entsprechen.
+export const BUCKET = "damage-images";
+export const FOLDER = "testing";
+
 export const testcases = [
 	{ id: 11982 },
 	{ id: 11951 },
@@ -62,12 +65,12 @@ export const testcases = [
 export const SUPABASE_PUBLIC_PREFIX =
 	"https://aexkfdacfobwtdqwrtid.supabase.co/storage/v1/object/public/damage-images/testing";
 
-export function buildImagePublicUrl(kundenNr: number): string {
-	// gemäss Vorgabe: {prefix}/{kundennummer}.jpeg
-	return `${SUPABASE_PUBLIC_PREFIX}/${kundenNr}.jpeg`;
+export function buildImagePublicUrl(kundenNr: number, index: number = 0): string {
+  const file = index === 0 ? `${kundenNr}.jpeg` : `${kundenNr} - ${index}.jpeg`;
+  return `${SUPABASE_PUBLIC_PREFIX}/${encodeURIComponent(file)}`;
 }
 
-export function buildImageId(kundenNr: number): string {
-	// Vorgabe imageId: "testing/ kundennummer,jpg" (interpretiert als path "testing/{kundenNr}.jpg")
-	return `testing/${kundenNr}.jpg`;
+export function buildImageId(kundenNr: number, index: number = 0): string {
+  const file = index === 0 ? `${kundenNr}.jpg` : `${kundenNr} - ${index}.jpg`;
+  return `${FOLDER}/${file}`;
 }
