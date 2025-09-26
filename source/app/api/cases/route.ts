@@ -25,8 +25,14 @@ export async function POST(req: Request) {
     const payload: NextGenDamage = {
       description: body.description ?? null,
       category: "TEST",
-      image_id: body.imageId ?? null,
-      image_public_url: body.publicUrl ?? null,
+      case_images: body.case_images.map(image => {
+        return {
+            image_id: image.imageId,
+            image_public_url: image.publicUrl
+        }
+      }),
+    //   image_id: body.imageId ?? null,
+    //   image_public_url: body.publicUrl ?? null,
       estimation: null, // not provided yet
       vector: null, // will be filled later with embedding
       case_status: "created", // could default to "new" if you want

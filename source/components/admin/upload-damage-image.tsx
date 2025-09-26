@@ -12,14 +12,19 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { Input } from "../ui/input";
+import { CaseImage } from "@/infrastructure/cases/case-repository";
 
 type UploadDamageImageSubmitPayload = {
   description: string;
   category: string;
-  imageId: string;
-  publicUrl: string;
+  case_images: UploadImagePayload[]
   saveToDb?: boolean;
 };
+
+type UploadImagePayload = {
+  imageId: string;
+  publicUrl: string;
+}
 
 type UploadDamageImageProps = {
   onSubmit?: (payload: UploadDamageImageSubmitPayload) => void;
@@ -53,9 +58,15 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
         const result = await props.onUpload();
         assetsToSubmit = result.assets;
       }
-      onSubmit({ description, imageId: assetsToSubmit[0].key, publicUrl: assetsToSubmit[0].publicUrl || "" ,category: category });
+      onSubmit({ description, case_images: assetsToSubmit.map(asset => {
+        return {
+          imageId: asset.key,
+          publicUrl: asset.publicUrl || "" 
+        }
+      }),category: category });
       // Reset form + dropzone state
       setDescription("");
+      setCategory("")
       props.reset();
       setSubmitting(false);
     },
