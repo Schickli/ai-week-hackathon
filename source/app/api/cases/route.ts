@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { Url } from "url";
 import { UploadDamageImageSubmitPayload } from "@/components/admin/upload-damage-image";
 import {
   CaseRepository,
@@ -23,9 +21,8 @@ export async function POST(req: Request) {
             image_public_url: image.publicUrl
         }
       }),
-    //   image_id: body.imageId ?? null,
-    //   image_public_url: body.publicUrl ?? null,
-      estimation: null, // not provided yet
+      saveToDB: body.saveToDb ?? true,
+      estimation: 1000, // not provided yet
       vector: null, // will be filled later with embedding
       case_status: "created", // could default to "new" if you want
       similar_cases: null, // none yet

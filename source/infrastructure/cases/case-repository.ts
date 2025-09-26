@@ -8,6 +8,7 @@ export type NextGenDamage = {
   vector: number[] | null;           // Supabase "vector" column
   case_status: string | null;
   similar_cases: string[] | null;    // _uuid[]
+  saveToDB: boolean;
 };
 
 export type InsertCaseImageRequest = {

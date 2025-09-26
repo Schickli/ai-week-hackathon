@@ -4,12 +4,13 @@
  1. CSV laden (../data/Versicherungsdaten.csv)
  2. Relevante Zeilen für testcases (Kunden-Nr.) filtern
  3. Request-Body für jeden Fall an POST http://localhost:3000/api/cases senden
-    Body Schema (interpretiert):
+    Neuer Body Schema (UploadDamageImageSubmitPayload):
       {
-        description: <Hergang>,
-        category: <SPARTE>,
-        publicUrl: https://aexkfdacfobwtdqwrtid.supabase.co/storage/v1/object/public/damage-images/testing/{Kunden-Nr.}.jpeg,
-        imageId: testing/{Kunden-Nr.}.jpg
+        description: string,
+        category: string,
+        case_images: [ { imageId: string, publicUrl: string } ],
+        saveToDb?: boolean   // ACHTUNG: Frontend-Typ benutzt saveToDb (kleines b);
+                             // Backend mappt body.saveToDb -> internal saveToDB.
       }
  4. Antwort enthält (erwartet) ein Feld estimate (oder ähnlich) – hier angenommen: response.estimate
  5. Vergleich mit historischem Wert (TOTAL SCHADENAUFWAND) -> Fehler (%) pro Fall
@@ -99,10 +100,15 @@ async function callApi(entry: CaseBenchmarkInput): Promise<number | null> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         description: entry.description,
-        category: entry.category,
-        publicUrl: entry.publicUrl,
-        imageId: entry.imageId,
-        saveToDB: false,
+        category: entry.category ?? '',
+        case_images: [
+          {
+            imageId: entry.imageId,
+            publicUrl: entry.publicUrl,
+          },
+        ],
+        // Wichtig: damit wir keine DB Writes auslösen (Benchmark), korrektes Feld nach Frontend-Typ:
+        saveToDb: false,
       }),
     });
     if (!res.ok) {
@@ -111,9 +117,7 @@ async function callApi(entry: CaseBenchmarkInput): Promise<number | null> {
     }
     const json: any = await res.json();
     // Erwartet: json.estimate oder json.amount etc. – wir versuchen mehrere Felder.
-    const maybe = json.estimate ?? json.amount ?? json.prediction ?? null;
-    if (maybe == null) return null;
-    const num = Number(maybe);
+    const num = Number(json.estimation);
     return Number.isFinite(num) ? num : null;
   } catch (e) {
     console.error('API Call Exception', entry.kundenNr, e);
