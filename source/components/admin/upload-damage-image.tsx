@@ -11,21 +11,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
+import { Input } from "../ui/input";
 
 type UploadDamageImageSubmitPayload = {
   description: string;
   category: string;
-  case_images: UploadImagePayload[]
+  case_images: UploadImagePayload[];
   saveToDb?: boolean;
 };
 
 type UploadImagePayload = {
   imageId: string;
   publicUrl: string;
-}
+};
 
 type UploadDamageImageProps = {
-  onSubmit?: (payload: UploadDamageImageSubmitPayload) => void;
+  onSubmit?: (payload: UploadDamageImageSubmitPayload) => Promise<void>;
 };
 
 const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
@@ -56,15 +57,20 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
         const result = await props.onUpload();
         assetsToSubmit = result.assets;
       }
-      onSubmit({ description, case_images: assetsToSubmit.map(asset => {
-        return {
-          imageId: asset.key,
-          publicUrl: asset.publicUrl || "" 
-        }
-      }),category: category });
+
+      await onSubmit({
+        description,
+        case_images: assetsToSubmit.map((asset) => {
+          return {
+            imageId: asset.key,
+            publicUrl: asset.publicUrl || "",
+          };
+        }),
+        category: category,
+      });
       // Reset form + dropzone state
       setDescription("");
-      setCategory("")
+      setCategory("");
       props.reset();
       setSubmitting(false);
     },
@@ -77,9 +83,9 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
         <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs leading-relaxed">
           <strong className="block mb-1">API usage</strong>
           <p className="text-muted-foreground">
-            You can also send this via our REST API: POST one image (max 10MB) + a
-            text field description. The response returns an id and storage path.
-            Full docs coming soon.
+            You can also send this via our REST API: POST one image (max 10MB) +
+            a text field description. The response returns an id and storage
+            path. Full docs coming soon.
           </p>
         </div>
         <div>
@@ -92,6 +98,18 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="resize-y min-h-24"
+          />
+        </div>
+        <div>
+          <Label htmlFor="damage-description" className="mb-1 block">
+            Category
+          </Label>
+          <Input
+            id="damage-description"
+            placeholder="Category of the damage..."
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className=""
           />
         </div>
         <div>

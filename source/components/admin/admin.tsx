@@ -6,11 +6,11 @@ import {
 } from "./upload-damage-image";
 
 export default function Admin() {
-  const handleSubmit = (payload: UploadDamageImageSubmitPayload) => {
+  const handleSubmit = async (payload: UploadDamageImageSubmitPayload) => {
     console.log("Damage submission:", payload);
 
     try {
-      fetch("/api/cases", {
+      await fetch("/api/cases", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
