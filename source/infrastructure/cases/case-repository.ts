@@ -3,15 +3,35 @@ import { createClient } from "../supabase/server";
 export type NextGenDamage = {
   description: string | null;
   category: string | null;
-  image_id: string | null;
-  image_public_url: string | null;
+  case_images: InsertCaseImageRequest[];
   estimation: number | null;         // numeric
   vector: number[] | null;           // Supabase "vector" column
   case_status: string | null;
   similar_cases: string[] | null;    // _uuid[]
 };
 
-const TABLE = "nest-gen-damage";
+export type InsertCaseImageRequest = {
+  image_id: string;
+  image_public_url: string;
+}
+
+/** Row returned after insert (at least the id) */
+export type NextGenDamageInserted = {
+  id: string; // uuid from DB
+  created_at: Date
+};
+
+
+export type CaseImage = {
+    id: string;
+    case_id: string;
+    image_id: string;
+    image_public_url: string;
+}
+
+const TABLE = "next-gen-damage";
+const IMAGE_TABLE = "case-image";
+const SCHEMA = "public";
 
 export class CaseRepository {
   static async get(id: string): Promise<GetCaseResponse | null> {
@@ -48,18 +68,46 @@ export class CaseRepository {
   static async insert(data: NextGenDamage){
     const supabase = await createClient();
 
-    const { data: inserted, error } = await supabase
-      .from(`${TABLE}`)
-      .insert([data])
+    const { data: caseInserted, error: caseError } = await supabase
+      .from(TABLE)
+      .insert([
+        {
+          description: data.description,
+          category: data.category,
+          estimation: data.estimation,
+          vector: data.vector,
+          case_status: data.case_status,
+          similar_cases: data.similar_cases,
+        },
+      ])
       .select("*")
       .single();
 
-    if (error) {
-      throw new Error(`Failed to store damage record: ${error.message}`);
+    if (caseError) {
+      throw new Error(`Failed to store case: ${caseError.message}`);
     }
 
-    
-    return inserted ?? []
+    // 2️⃣ Insert related images
+    if (data.case_images?.length) {
+      const imagesToInsert = data.case_images.map((img) => ({
+        case_id: caseInserted.id, // FK
+        image_id: img.image_id,
+        image_public_url: img.image_public_url,
+      }));
+
+      const { error: imageError } = await supabase
+        .from(IMAGE_TABLE)
+        .insert(imagesToInsert);
+
+      if (imageError) {
+        throw new Error(`Failed to store case images: ${imageError.message}`);
+      }
+    }
+
+    return {
+      ...caseInserted,
+      case_images: data.case_images ?? [],
+    };
   }
 }
 
@@ -68,8 +116,7 @@ export type GetCaseResponse = {
   created_at: Date;
   description: string | null;
   category: string | null;
-  image_id: string | null;
-  image_public_url: string | null;
+  case_images: CaseImage[];
   estimation: number | null;         // numeric
   vector: number[] | null;           // Supabase "vector" column
   case_status: string | null;
