@@ -9,14 +9,6 @@ import {
 } from "@/infrastructure/cases/case-repository";
 import { processCase } from "@/services/process-case";
 
-type StoreResponse =
-  | {
-      success: true;
-      id: string;
-      created_at: Date;
-    }
-  | { error: string };
-
 export async function POST(req: Request) {
   try {
     const body: UploadDamageImageSubmitPayload = await req.json();
@@ -43,16 +35,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        success: true,
-        id: result.id,
-        created_at: result.created_at,
-      } satisfies StoreResponse,
+        ...result
+      },
       { status: 200 }
     );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return NextResponse.json(
-      { error: err?.message ?? "Unexpected error" } satisfies StoreResponse,
+      { error: err?.message ?? "Unexpected error" },
       { status: 500 }
     );
   }
