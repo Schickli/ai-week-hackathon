@@ -16,6 +16,7 @@ export type NextGenDamage = {
 /** Row returned after insert (at least the id) */
 export type NextGenDamageInserted = {
   id: string; // uuid from DB
+  created_at: Date
 };
 
 const TABLE = "nest-gen-damage";
@@ -29,7 +30,7 @@ export class CaseRepository {
     const { data: inserted, error } = await supabase
       .from(`${TABLE}`)
       .insert([data])
-      .select("id")
+      .select("id, created_at")
       .single();
 
     if (error) {
@@ -37,6 +38,10 @@ export class CaseRepository {
       throw new Error(`Failed to store damage record: ${error.message}`);
     }
 
-    return { id: inserted.id as string };
+    
+    return {
+        id: inserted.id,
+        created_at: new Date(inserted.created_at)
+    }
   }
 }

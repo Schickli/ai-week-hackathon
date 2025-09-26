@@ -3,8 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 import { Url } from "url";
 import { UploadDamageImageSubmitPayload } from "@/components/admin/upload-damage-image";
 import { CaseRepository, NextGenDamage } from "@/infrastructure/cases/case-repository";
+import { processCase } from "@/services/process-case";
 
-type StoreResponse = { success: true; id: string } | { error: string };
+type StoreResponse = { 
+    success: true; 
+    id: string;
+    created_at: Date; 
+} | { error: string };
 
 export async function POST(req: Request) {
   try {
@@ -22,10 +27,13 @@ export async function POST(req: Request) {
       similar_cases: null,    // none yet
     };
 
-    const { id } = await CaseRepository.insert(payload);
+    var result = await processCase(payload);
 
-    return NextResponse.json(
-      { success: true, id } satisfies StoreResponse,
+    return NextResponse.json({ 
+        success: true,
+        id: result.id,
+        created_at: result.created_at
+       } satisfies StoreResponse,
       { status: 200 }
     );
   } catch (err: any) {
