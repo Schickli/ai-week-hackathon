@@ -28,8 +28,8 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
   const props = useSupabaseUpload({
     bucketName: "damage-images",
     path: "v0",
-    allowedMimeTypes: ["image/*"],
-    maxFiles: 1,
+    allowedMimeTypes: ["image/jpeg", "image/jpg"],
+    maxFiles: 5,
     maxFileSize: 1000 * 1000 * 10, // 10MB,
     publicBucket: true,
     upsert: true,
