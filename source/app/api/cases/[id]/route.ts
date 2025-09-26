@@ -1,13 +1,10 @@
 import { CaseRepository, GetCaseResponse } from "@/infrastructure/cases/case-repository";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/cases/[id]
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest,  { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const data: GetCaseResponse | null = await CaseRepository.get(id);
 
@@ -19,9 +16,7 @@ export async function GET(
     }
 
     return NextResponse.json<GetCaseResponse>(data);
-  } catch (err: {
-    message: string;
-  }) {
+  } catch (err: any) {
     return NextResponse.json(
       { error: err.message ?? "Unknown error" },
       { status: 500 }
@@ -32,10 +27,10 @@ export async function GET(
 // PATCH /api/cases/[id]
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     if (!body.case_status) {
@@ -49,9 +44,7 @@ export async function PATCH(
 
     // Return no content (204)
     return new Response(null, { status: 204 });
-  } catch (err: {
-    message: string;
-  }) {
+  } catch (err: any) {
     return NextResponse.json(
       { error: err.message ?? "Unknown error" },
       { status: 500 }
