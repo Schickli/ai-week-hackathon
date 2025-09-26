@@ -62,68 +62,58 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
   );
 
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-6">
-      <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs leading-relaxed">
-        <strong className="block mb-1">API usage</strong>
-        <p className="text-muted-foreground">
-          You can also send this via our REST API: POST one image (max 10MB) + a
-          text field description. The response returns an id and storage path.
-          Full docs coming soon.
-        </p>
-      </div>
-      <div>
-        <Label htmlFor="damage-description" className="mb-1 block">
-          Description
-        </Label>
-        <Textarea
-          id="damage-description"
-          placeholder="Short description of the damage..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="resize-y min-h-24"
-        />
-      </div>
-      <div>
-        <Label htmlFor="damage-description" className="mb-1 block">
-          Category
-        </Label>
-        <Input
-          id="damage-description"
-          placeholder="Categtory of the damage..."
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className=""
-        />
-      </div>
-      <div>
-        <Label className="mb-1 block">Image Upload</Label>
-        <Dropzone {...props}>
-          <DropzoneEmptyState />
-          <DropzoneContent />
-        </Dropzone>
-      </div>
-      <div className="flex justify-end gap-2 pt-2">
-        <Button
-          type="submit"
-          variant="default"
-          disabled={
-            submitting ||
-            props.loading ||
-            description.trim().length === 0 ||
-            props.files.length === 0
-          }
-          className="inline-flex items-center gap-2 justify-center"
-        >
-          {submitting || props.loading ? (
-            <>Uploading...</>
-          ) : (
-            <>
-              <Upload className="h-4 w-4" /> <p>Case</p>
-            </>
-          )}
-        </Button>
-      </div>
-    </form>
+    <div className="flex flex-col h-auto w-auto">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
+        <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-xs leading-relaxed">
+          <strong className="block mb-1">API usage</strong>
+          <p className="text-muted-foreground">
+            You can also send this via our REST API: POST one image (max 10MB) + a
+            text field description. The response returns an id and storage path.
+            Full docs coming soon.
+          </p>
+        </div>
+        <div>
+          <Label htmlFor="damage-description" className="mb-1 block">
+            Description
+          </Label>
+          <Textarea
+            id="damage-description"
+            placeholder="Short description of the damage..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="resize-y min-h-24"
+          />
+        </div>
+        <div>
+          <Label className="mb-1 block">Image Upload</Label>
+          <Dropzone {...props}>
+            <DropzoneEmptyState />
+            <DropzoneContent />
+          </Dropzone>
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button
+            type="submit"
+            variant="default"
+            disabled={
+              submitting ||
+              props.loading ||
+              description.trim().length === 0 ||
+              props.files.length === 0
+            }
+            className="inline-flex items-center gap-2 justify-center"
+          >
+            {submitting || props.loading ? (
+              <>Uploading...</>
+            ) : (
+              <>
+                <Upload className="h-4 w-4" /> <p>Case</p>
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 
