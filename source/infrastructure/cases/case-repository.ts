@@ -5,13 +5,25 @@ import { createClient } from "../supabase/server"; // path to your server.ts (ad
 export type NextGenDamage = {
   description: string | null;
   category: string | null;
-  image_id: string | null;
-  image_public_url: string | null;
+  case_images: CaseImage[];
   estimation: number | null;         // numeric
   vector: number[] | null;           // Supabase "vector" column
   case_status: string | null;
   similar_cases: string[] | null;    // _uuid[]
 };
+
+export type InsertCaseImageRequest = {
+  case_id: string;
+  image_id: string;
+  image_public_url: string;
+}
+
+export type CaseImage = {
+    id: string;
+    case_id: string;
+    image_id: string;
+    image_public_url: string;
+}
 
 /** Row returned after insert (at least the id) */
 export type NextGenDamageInserted = {
@@ -19,7 +31,7 @@ export type NextGenDamageInserted = {
   created_at: Date
 };
 
-const TABLE = "nest-gen-damage";
+const TABLE = "next-gen-damage";
 const SCHEMA = "public";
 
 export class CaseRepository {
@@ -61,7 +73,7 @@ export class CaseRepository {
     const { data: inserted, error } = await supabase
       .from(`${TABLE}`)
       .insert([data])
-      .select("id, created_at")
+      .select("*")
       .single();
 
     if (error) {
@@ -82,8 +94,7 @@ export type GetCaseResponse = {
   created_at: Date;
   description: string | null;
   category: string | null;
-  image_id: string | null;
-  image_public_url: string | null;
+  case_images: CaseImage[];
   estimation: number | null;         // numeric
   vector: number[] | null;           // Supabase "vector" column
   case_status: string | null;
