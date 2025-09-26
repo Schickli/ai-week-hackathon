@@ -132,7 +132,7 @@ export default function Process() {
           </div>
 
           <div className="flex-1 flex flex-col items-center justify-center">
-            <Card className="flex flex-col p-0 w-full max-w-xl bg-white shadow-2xl rounded-2xl border-none overflow-hidden min-h-[20rem]">
+            <Card className="flex flex-col p-0 w-full max-w-3xl bg-white shadow-2xl rounded-2xl border-none overflow-hidden min-h-[20rem]">
               {loading ? (
                 <div className="flex flex-col items-center justify-center min-h-[22rem] gap-4">
                   <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -143,7 +143,7 @@ export default function Process() {
                 </div>
               ) : caseData ? (
                 <>
-                  <div className="w-full min-h-[18rem] flex flex-col">
+                  <div className="w-full min-h-[25rem] flex flex-col">
                     <div className="relative w-full">
                       <Carousel className="w-full h-72">
                         <CarouselContent>
