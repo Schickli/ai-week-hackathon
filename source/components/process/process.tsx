@@ -36,7 +36,7 @@ const mockSimilarCases = [
 
 export default function Process() {
   const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
-  const [scrapeActive, setScrapeActive] = useState(false);
+  const [scrapeActive, setScrapeActive] = useState(false); // THIS USESTATE NEEDS TO BE ACTIVATED IN ORDER TO SHOW THE WEB PRICE TOOL
   const declineOptions = [
     { label: "Image not clear", value: "image_not_clear" },
     { label: "Description missing", value: "description_missing" },
@@ -58,7 +58,6 @@ export default function Process() {
   const [scrapedProduct, setScrapedProduct] = useState<string | null>(null);
 
   useEffect(() => {
-    // Reset scrapeActive when a new case is loaded
     setScrapeActive(false);
   }, [caseData]);
 
@@ -175,18 +174,6 @@ export default function Process() {
 
           {/* Active Case Center */}
           <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="w-full flex justify-end mb-2">
-              {!scrapeActive && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full px-4 py-2 text-xs font-semibold shadow"
-                  onClick={() => setScrapeActive(true)}
-                >
-                  Activate Web Price Tool
-                </Button>
-              )}
-            </div>
             <Card className="flex flex-col p-0 w-full max-w-3xl bg-white shadow-2xl rounded-2xl border-none overflow-hidden min-h-[20rem]">
               {loading ? (
                 <div className="flex flex-col items-center justify-center min-h-[22rem] gap-4">
@@ -277,14 +264,8 @@ export default function Process() {
                     )}
                     <ul className="space-y-4">
                       {scrapedPrices.map((p, idx) => (
-                        <li key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 shadow-sm">
-                          {p.thumbnail && (
-                            <Image src={p.thumbnail} alt={p.title} width={48} height={48} className="rounded-md object-cover" />
-                          )}
-                          <div className="flex flex-col flex-1">
-                            <span className="font-semibold text-gray-800 text-sm">{p.title}</span>
-                            <span className="text-xs text-gray-500">{p.source}</span>
-                          </div>
+                        <li key={idx} className="flex flex-col gap-1 p-2 rounded-lg bg-gray-50 shadow-sm">
+                          <span className="font-semibold text-gray-800 text-sm">{p.title}</span>
                           <span className="font-bold text-purple-600 text-base">{p.price}</span>
                         </li>
                       ))}

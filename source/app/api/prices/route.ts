@@ -9,19 +9,6 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Missing image_url parameter' }, { status: 400 });
     }
 
-    // Step 1: Download image and convert to base64
-    let imageBase64: string | null = null;
-    try {
-        const imageRes = await fetch(imageUrl);
-        if (!imageRes.ok) throw new Error('Failed to fetch image');
-        const arrayBuffer = await imageRes.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        imageBase64 = buffer.toString('base64');
-    } catch (err) {
-        return NextResponse.json({ error: 'Failed to fetch or process image' }, { status: 500 });
-    }
-
-    // Step 2: Prompt AI agent for product name
     let productName: string | null = null;
     try {
         const aiPrompt = [
@@ -31,7 +18,12 @@ export async function GET(req: NextRequest) {
             },
             {
                 role: 'user' as const,
-                content: `Here is a product image (base64): ${imageBase64}`
+                content: [
+                    {
+                        type: 'image' as const,
+                        image: imageUrl
+                    }
+                ]
             }
         ];
         productName = await promptAI(aiPrompt);
@@ -41,7 +33,6 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Failed to identify product from image' }, { status: 500 });
     }
 
-    // Step 3: Scrape prices from SerpAPI
     let prices = [];
     try {
         prices = await scrapeProductPrices(productName);
