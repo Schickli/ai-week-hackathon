@@ -1,32 +1,38 @@
-import { CaseRepository, NextGenDamage } from "@/infrastructure/cases/case-repository";
+import {
+  CaseRepository,
+  NextGenDamage,
+} from "@/infrastructure/cases/case-repository";
 
 export async function processCase(payload: NextGenDamage) {
-    // Generate Embeddings
-    generateEmbeddings();
+  // Generate Embeddings
+  generateEmbeddings();
 
-    // Search similar cases 
-    searchSimilarCases();
+  // Search similar cases
+  searchSimilarCases();
 
-    // Prompt AI for estimation
-    promptAIForEstimation();
+  // Prompt AI for estimation
+  promptAIForEstimation();
 
-    // Save to DB if flag is not set
+  // Save to DB if flag is not set
+  if (payload.saveToDB) {
     return await saveToDB(payload);
+  }
+
+  return payload;
 }
 
 async function generateEmbeddings() {
-    // TODO
+  // TODO
 }
 
 async function searchSimilarCases() {
-    // TODO
+  // TODO
 }
 
 async function promptAIForEstimation() {
-    // TODO
+  // TODO
 }
 
 async function saveToDB(data: NextGenDamage) {
-    return await CaseRepository.insert(data)
+  return await CaseRepository.insert(data);
 }
-

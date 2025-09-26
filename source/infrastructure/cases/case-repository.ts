@@ -8,6 +8,7 @@ export type NextGenDamage = {
   vector: number[] | null;           // Supabase "vector" column
   case_status: string | null;
   similar_cases: string[] | null;    // _uuid[]
+  saveToDB: boolean;
 };
 
 export type InsertCaseImageRequest = {
@@ -137,6 +138,22 @@ export class CaseRepository {
       ...caseInserted,
       case_images: data.case_images ?? [],
     };
+  }
+
+  static async updateStatus(id: string, newStatus: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from(TABLE)
+      .update({ case_status: newStatus })
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update case status: ${error.message}`);
+    }
+
+    return data;
   }
 }
 
