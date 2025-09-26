@@ -139,6 +139,22 @@ export class CaseRepository {
       case_images: data.case_images ?? [],
     };
   }
+
+  static async updateStatus(id: string, newStatus: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from(TABLE)
+      .update({ case_status: newStatus })
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update case status: ${error.message}`);
+    }
+
+    return data;
+  }
 }
 
 export type GetCaseResponse = {
