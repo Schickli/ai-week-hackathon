@@ -21,7 +21,6 @@ export type NextGenDamageInserted = {
   created_at: Date
 };
 
-
 export type CaseImage = {
     id: string;
     case_id: string;
