@@ -2,14 +2,20 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Url } from "url";
 import { UploadDamageImageSubmitPayload } from "@/components/admin/upload-damage-image";
-import { CaseRepository, GetCaseResponse, NextGenDamage } from "@/infrastructure/cases/case-repository";
+import {
+  CaseRepository,
+  GetCaseResponse,
+  NextGenDamage,
+} from "@/infrastructure/cases/case-repository";
 import { processCase } from "@/services/process-case";
 
-type StoreResponse = { 
-    success: true; 
-    id: string;
-    created_at: Date; 
-} | { error: string };
+type StoreResponse =
+  | {
+      success: true;
+      id: string;
+      created_at: Date;
+    }
+  | { error: string };
 
 export async function POST(req: Request) {
   try {
@@ -21,21 +27,23 @@ export async function POST(req: Request) {
       category: "TEST",
       image_id: body.imageId ?? null,
       image_public_url: body.publicUrl ?? null,
-      estimation: 10,       // not provided yet
-      vector: null,           // will be filled later with embedding
-      case_status: "approved",      // could default to "new" if you want
-      similar_cases: null,    // none yet
+      estimation: null, // not provided yet
+      vector: null, // will be filled later with embedding
+      case_status: "created", // could default to "new" if you want
+      similar_cases: null, // none yet
     };
 
-    var result = await processCase(payload);
+    const result = await processCase(payload);
 
-    return NextResponse.json({ 
+    return NextResponse.json(
+      {
         success: true,
         id: result.id,
-        created_at: result.created_at
-       } satisfies StoreResponse,
+        created_at: result.created_at,
+      } satisfies StoreResponse,
       { status: 200 }
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message ?? "Unexpected error" } satisfies StoreResponse,
@@ -49,6 +57,7 @@ export async function GET() {
     const data: GetCaseResponse[] = await CaseRepository.getAll();
 
     return NextResponse.json<GetCaseResponse[]>(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message ?? "Unknown error" },
