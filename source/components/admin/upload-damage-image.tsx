@@ -11,11 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
+import { Input } from "../ui/input";
 
-type UploadedAsset = { name: string; key: string; publicUrl?: string };
 type UploadDamageImageSubmitPayload = {
   description: string;
-  assets: UploadedAsset[];
+  category: string;
+  imageId: string;
+  publicUrl: string;
 };
 
 type UploadDamageImageProps = {
@@ -30,12 +32,14 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
     maxFiles: 1,
     maxFileSize: 1000 * 1000 * 10, // 10MB,
     publicBucket: true,
-    upsert: true
+    upsert: true,
   });
 
   const [description, setDescription] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
+
+  const [category, setCategory] = useState("");
 
   const handleFormSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -48,13 +52,13 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
         const result = await props.onUpload();
         assetsToSubmit = result.assets;
       }
-      onSubmit({ description, assets: assetsToSubmit });
+      onSubmit({ description, imageId: assetsToSubmit[0].key, publicUrl: assetsToSubmit[0].publicUrl || "" ,category: category });
       // Reset form + dropzone state
       setDescription("");
       props.reset();
       setSubmitting(false);
     },
-    [onSubmit, description, props]
+    [onSubmit, props, description, category]
   );
 
   return (
@@ -77,6 +81,18 @@ const UploadDamageImage = ({ onSubmit }: UploadDamageImageProps) => {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="resize-y min-h-24"
+        />
+      </div>
+      <div>
+        <Label htmlFor="damage-description" className="mb-1 block">
+          Category
+        </Label>
+        <Input
+          id="damage-description"
+          placeholder="Categtory of the damage..."
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className=""
         />
       </div>
       <div>
