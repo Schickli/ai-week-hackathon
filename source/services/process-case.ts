@@ -21,7 +21,12 @@ export async function processCase(payload: NextGenDamage) {
   const similarCases = await searchSimilarCases(payload);
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload.similar_cases = similarCases.map((c: any) => c.id);
+  payload.similar_cases = similarCases.map((c: any) => {
+    return {
+      case_id: c.id,
+      similarity: c.similarity
+    }
+  });
 
   // Prompt AI for estimation
   const estimation = await promptAIForEstimation(payload, similarCases);
