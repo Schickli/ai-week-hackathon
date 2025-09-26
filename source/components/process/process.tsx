@@ -35,16 +35,8 @@ const mockSimilarCases = [
 ];
 
 export default function Process() {
-  const handleDecision = async (status: "approve" | "declined") => {
-    if (!caseData) return;
-    await fetch(`/api/cases/${caseData.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ case_status: status === "approve" ? "approved" : "declined" }),
-    });
-    await handleRefresh()();
-  };
   const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
+  const [scrapeActive, setScrapeActive] = useState(false);
   const declineOptions = [
     { label: "Image not clear", value: "image_not_clear" },
     { label: "Description missing", value: "description_missing" },
@@ -60,6 +52,51 @@ export default function Process() {
   const [similarCases] = useState(mockSimilarCases);
   const [judgedCount, setJudgedCount] = useState(0);
   const [unjudgedCount, setUnjudgedCount] = useState(0);
+  const [scrapedPrices, setScrapedPrices] = useState<Array<{ title: string, price: string, source: string, thumbnail: string }>>([]);
+  const [scrapeLoading, setScrapeLoading] = useState(false);
+  const [scrapeError, setScrapeError] = useState<string | null>(null);
+  const [scrapedProduct, setScrapedProduct] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Reset scrapeActive when a new case is loaded
+    setScrapeActive(false);
+  }, [caseData]);
+
+  useEffect(() => {
+    const runScrape = async () => {
+      if (!scrapeActive || !caseData || !caseData.case_images?.[0]?.image_public_url) return;
+      setScrapeLoading(true);
+      setScrapeError(null);
+      setScrapedPrices([]);
+      setScrapedProduct(null);
+      try {
+        const imageUrl = encodeURIComponent(caseData.case_images[0].image_public_url);
+        const response = await fetch(`/api/prices?image_url=${imageUrl}`);
+        if (!response.ok) {
+          throw new Error('API request failed');
+        }
+        const result = await response.json();
+        console.log("Scrape result:", result);
+        setScrapedProduct(result.productName);
+        setScrapedPrices(result.prices ?? []);
+      } catch (err) {
+        console.error("Scrape error:", err);
+        setScrapeError("Failed to fetch product/prices.");
+      }
+      setScrapeLoading(false);
+    };
+    runScrape();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrapeActive, caseData]);
+  const handleDecision = async (status: "approved" | "declined") => {
+    if (!caseData) return;
+    await fetch(`/api/cases/${caseData.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ case_status: status === "approved" ? "approved" : "declined" }),
+    });
+    await handleRefresh()();
+  };
 
   const handleRefresh = () => async () => {
     setLoading(true);
@@ -101,6 +138,7 @@ export default function Process() {
 
       <div className="flex justify-center items-center">
         <div className="flex w-[90vw] gap-8">
+          {/* Similar Cases Sidebar */}
           <div className="w-1/3 min-w-[260px] max-w-[400px] overflow-y-auto shadow-2xl rounded-2xl">
             <Card className="p-6 h-full flex flex-col bg-white rounded-2xl">
               <div className="flex items-center gap-3 text-xl font-bold tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
@@ -135,7 +173,20 @@ export default function Process() {
             </Card>
           </div>
 
+          {/* Active Case Center */}
           <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="w-full flex justify-end mb-2">
+              {!scrapeActive && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full px-4 py-2 text-xs font-semibold shadow"
+                  onClick={() => setScrapeActive(true)}
+                >
+                  Activate Web Price Tool
+                </Button>
+              )}
+            </div>
             <Card className="flex flex-col p-0 w-full max-w-3xl bg-white shadow-2xl rounded-2xl border-none overflow-hidden min-h-[20rem]">
               {loading ? (
                 <div className="flex flex-col items-center justify-center min-h-[22rem] gap-4">
@@ -190,7 +241,7 @@ export default function Process() {
                 variant="outline"
                 size="icon"
                 className="w-16 h-16 rounded-full border-2 border-green-500 text-green-500 transition-all duration-200 hover:scale-110 hover:bg-green-500 hover:text-white hover:border-green-600 focus:outline-none shadow-lg"
-                onClick={async () => await handleDecision("approve")}
+                onClick={async () => await handleDecision("approved")}
                 aria-label="Approve"
                 disabled={!caseData}
               >
@@ -198,6 +249,51 @@ export default function Process() {
               </Button>
             </div>
           </div>
+
+          {/* Web Price Tool Sidebar (right) */}
+          {scrapeActive && (
+            <div className="w-1/3 min-w-[260px] max-w-[400px] overflow-y-auto shadow-2xl rounded-2xl">
+              <Card className="p-6 h-full flex flex-col bg-white rounded-2xl">
+                <div className="flex items-center gap-3 text-xl font-bold tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
+                  <TrendingUp className="w-7 h-7 text-purple-400 drop-shadow" />
+                  <span className="drop-shadow">Web Prices</span>
+                </div>
+                {scrapeLoading ? (
+                  <div className="flex flex-col items-center justify-center min-h-[10rem] gap-2">
+                    <svg className="animate-spin h-8 w-8 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    <span className="text-purple-500 text-base font-medium">Scraping prices...</span>
+                  </div>
+                ) : scrapeError ? (
+                  <div className="text-red-500 text-sm font-medium">{scrapeError}</div>
+                ) : scrapedPrices.length === 0 ? (
+                  <div className="text-gray-500 text-sm font-medium">No prices found.</div>
+                ) : (
+                  <>
+                    {scrapedProduct && (
+                      <div className="mb-2 text-xs text-gray-700 font-semibold">Product: <span className="text-purple-700">{scrapedProduct}</span></div>
+                    )}
+                    <ul className="space-y-4">
+                      {scrapedPrices.map((p, idx) => (
+                        <li key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 shadow-sm">
+                          {p.thumbnail && (
+                            <Image src={p.thumbnail} alt={p.title} width={48} height={48} className="rounded-md object-cover" />
+                          )}
+                          <div className="flex flex-col flex-1">
+                            <span className="font-semibold text-gray-800 text-sm">{p.title}</span>
+                            <span className="text-xs text-gray-500">{p.source}</span>
+                          </div>
+                          <span className="font-bold text-purple-600 text-base">{p.price}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </div>
