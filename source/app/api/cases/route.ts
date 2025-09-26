@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         }
       }),
       saveToDB: body.saveToDb ?? true,
-      estimation: 1000, // not provided yet
+      estimation: null, // not provided yet
       vector: null, // will be filled later with embedding
       case_status: "created", // could default to "new" if you want
       similar_cases: [], // none yet

@@ -4,7 +4,7 @@ export type NextGenDamage = {
   description: string;
   category: string;
   case_images: InsertCaseImageRequest[];
-  estimation: number;         // numeric
+  estimation: number | null;         // numeric
   vector: number[] | null;           // Supabase "vector" column
   case_status: string;
   similar_cases: string[];    // _uuid[]
