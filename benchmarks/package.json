@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "benchmark": "ts-node runBenchmark.ts",
-    "benchmark:report": "ts-node runBenchmark.ts --report report.json"
+    "benchmark": "tsx runBenchmark.ts",
+    "benchmark:report": "tsx runBenchmark.ts --report report.json"
   },
   "dependencies": {
     "csv-parse": "^5.5.6",

@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { Input } from "../ui/input";
-import { CaseImage } from "@/infrastructure/cases/case-repository";
 
 type UploadDamageImageSubmitPayload = {
   description: string;
