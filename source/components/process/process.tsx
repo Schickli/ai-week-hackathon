@@ -155,10 +155,10 @@ export default function Process() {
                     <div className="relative w-full">
                       <Carousel className="w-full h-72">
                         <CarouselContent>
-                          {(Array.isArray(caseData.image_public_url) ? caseData.image_public_url : [caseData.image_public_url]).map((imgUrl, idx) => (
-                            <CarouselItem key={idx} className="h-72">
+                          {(caseData.case_images ?? []).map((img, idx) => (
+                            <CarouselItem key={img.id || idx} className="h-72">
                               <img
-                                src={imgUrl ?? ''}
+                                src={img.image_public_url}
                                 alt={`Damage ${idx + 1}`}
                                 className="w-full h-72 object-cover rounded-t-2xl shadow-lg border-none"
                                 style={{ fontFamily: 'Poppins, sans-serif' }}
@@ -190,7 +190,7 @@ export default function Process() {
                       {/* Confidence score placeholder, update property name as needed */}
                       {typeof caseData.estimation === 'number' && (
                         <span className="text-lg font-semibold text-green-600 bg-green-100 px-3 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                          {`Confidence: ${(caseData.estimation * 100).toFixed(1)}%`}
+                          {`Confidence: ${(1 * 100).toFixed(1)}%`}
                         </span>
                       )}
                     </div>
