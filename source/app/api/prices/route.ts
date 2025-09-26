@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
                 ]
             }
         ];
-        productName = await promptAI(aiPrompt);
+        productName = await promptAI(aiPrompt) as string;
         console.log('Identified product name:', productName);
         if (!productName) throw new Error('AI agent did not return a product name');
     } catch (err) {

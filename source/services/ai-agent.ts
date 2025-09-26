@@ -3,9 +3,12 @@ import {
   embed,
   generateText,
   SystemModelMessage,
+  tool,
   ToolModelMessage,
   UserModelMessage,
 } from "ai";
+import { scrapeProductPrices } from "./serpapi-scraper";
+import { z } from "zod";
 import { createAzure } from "@ai-sdk/azure";
 
 const azure = createAzure();
@@ -18,12 +21,30 @@ export async function promptAI(
     | ToolModelMessage
   >
 ) {
-  const { text } = await generateText({
+  const { text, toolResults } = await generateText({
     model: azure("gpt-5"),
+    tools: {
+      getProductPrices: tool({
+        description: 'Get prices for a product name using SerpAPI Google Shopping.',
+        inputSchema: z.object({
+          productName: z.string().describe('The name of the product to search prices for'),
+          limit: z.number().describe('Maximum number of price results to return'),
+        }),
+        execute: async ({ productName, limit }: { productName: string; limit: number }) => {
+          const prices = await scrapeProductPrices(productName, limit);
+          console.log(`Scraped ${prices.length} prices for product "${productName}"`);
+          return prices;
+        },
+      }),
+    },
     system: systemPromptEstimation,
     messages: messages,
   });
 
+  // If the AI called the tool, return its result, otherwise return the text
+  if (toolResults && toolResults.length > 0) {
+    return toolResults[0].output;
+  }
   return text;
 }
 
