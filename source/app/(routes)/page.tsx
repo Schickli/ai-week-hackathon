@@ -15,10 +15,14 @@ export default function Home() {
             <TabsTrigger value="admin">Admin</TabsTrigger>
           </TabsList>
           <TabsContent value="cases" className="p-2">
-            <Process />
+            <div className="w-[90vw] mx-auto">
+              <Process />
+            </div>
           </TabsContent>
-          <TabsContent value="admin" className="p-2">
-            <Admin />
+          <TabsContent value="admin" className="p-2 w-full">
+            <div className="w-[90vw] mx-auto">
+              <Admin />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
