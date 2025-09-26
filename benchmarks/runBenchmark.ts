@@ -22,7 +22,7 @@ import { createReadStream } from 'fs';
 import { resolve } from 'path';
 import { parse } from 'csv-parse';
 import fetch from 'node-fetch';
-import { testcases } from './testcases.js';
+import { buildImageId, buildImagePublicUrl, testcases } from './testcases.js';
 
 import { readdir } from 'fs/promises';
 import { join, resolve as resolvePath } from 'path';
@@ -108,12 +108,17 @@ async function buildBenchmarkInputs(rows: CsvRowRaw[]): Promise<CaseBenchmarkInp
 
 async function buildCaseImages(kundenNr: number): Promise<CaseImage[]> {
   const files = await listCustomerImages(kundenNr);
-  const dirPath = LOCAL_IMAGE_ROOT;
+  return files.map(name => {
 
-  return files.map(name => ({
-    imageId: `${name}`, // keep relative "storage-like" path
-    publicUrl: pathToFileURL(join(dirPath, name)).href, // e.g., "file:///.../data/testing/123.jpg"
-  }));
+    const match = name.match(/^(\d+)(?: - (\d+))?\.(?:jpe?g)$/i);
+    if (!match) throw new Error(`Unexpected filename format: ${name}`);
+    const index = match[2] ? parseInt(match[2], 10) : 0;
+
+    return {
+      imageId: buildImageId(kundenNr, index),
+      publicUrl: buildImagePublicUrl(kundenNr, index),
+    };
+  });
 }
 
 
@@ -166,7 +171,7 @@ async function main() {
   const inputs = await buildBenchmarkInputs(rows);
   console.log(`Gefilterte Testfälle: ${inputs.length}`);
 
-  const parallel = Number(process.env.BENCH_PARALLEL || '4');
+  const parallel = Number(process.env.BENCH_PARALLEL || '1');
   const queue = [...inputs];
   const results: CaseBenchmarkResult[] = [];
 

@@ -5,26 +5,26 @@ export const FOLDER = "testing";
 
 export const testcases = [
 	{ id: 10250 },
-	// { id: 11951 },
-	// { id: 11893 },
-	// { id: 11892 },
-	// { id: 11890 },
-	// { id: 11867 },
-	// { id: 11865 },
-	// { id: 11770 },
-	// { id: 11766 },
-	// { id: 11741 },
-	// { id: 11696 },
-	// { id: 11695 },
-	// { id: 11687 },
-	// { id: 11685 },
-	// { id: 11653 },
-	// { id: 11649 },
-	// { id: 11638 },
-	// { id: 11631 },
-	// { id: 11629 },
-	// { id: 11436 },
-	// { id: 11423 },
+	{ id: 11951 },
+	{ id: 11893 },
+	{ id: 11892 },
+	{ id: 11890 },
+	{ id: 11867 },
+	{ id: 11865 },
+	{ id: 11770 },
+	{ id: 11766 },
+	{ id: 11741 },
+	{ id: 11696 },
+	{ id: 11695 },
+	{ id: 11687 },
+	{ id: 11685 },
+	{ id: 11653 },
+	{ id: 11649 },
+	{ id: 11638 },
+	{ id: 11631 },
+	{ id: 11629 },
+	{ id: 11436 },
+	{ id: 11423 },
 	// { id: 11394 },
 	// { id: 11312 },
 	// { id: 11291 },
@@ -66,7 +66,7 @@ export const SUPABASE_PUBLIC_PREFIX =
 	"https://aexkfdacfobwtdqwrtid.supabase.co/storage/v1/object/public/damage-images/testing";
 
 export function buildImagePublicUrl(kundenNr: number, index: number = 0): string {
-  const file = index === 0 ? `${kundenNr}.jpeg` : `${kundenNr} - ${index}.jpeg`;
+  const file = index === 0 ? `${kundenNr}.jpg` : `${kundenNr} - ${index}.jpg`;
   return `${SUPABASE_PUBLIC_PREFIX}/${encodeURIComponent(file)}`;
 }
 
