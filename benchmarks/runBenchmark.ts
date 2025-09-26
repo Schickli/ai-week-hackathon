@@ -1,35 +1,16 @@
-/*
- Benchmark Script
- Steps:
- 1. CSV laden (../data/Versicherungsdaten.csv)
- 2. Relevante Zeilen für testcases (Kunden-Nr.) filtern
- 3. Request-Body für jeden Fall an POST http://localhost:3000/api/cases senden
-    Body Schema (interpretiert):
-      {
-        description: <Hergang>,
-        category: <SPARTE>,
-        publicUrl: https://aexkfdacfobwtdqwrtid.supabase.co/storage/v1/object/public/damage-images/testing/{Kunden-Nr.}.jpeg,
-        imageId: testing/{Kunden-Nr.}.jpg
-      }
- 4. Antwort enthält (erwartet) ein Feld estimate (oder ähnlich) – hier angenommen: response.estimate
- 5. Vergleich mit historischem Wert (TOTAL SCHADENAUFWAND) -> Fehler (%) pro Fall
- 6. Standardabweichung der Fehler (%), mittlerer absoluter Fehler (%), MAPE
- 7. Optionaler JSON-Report (--report <pfad>)
-*/
-
-import { createReadStream } from 'fs';
-import { resolve } from 'path';
-import { parse } from 'csv-parse';
-import fetch from 'node-fetch';
-import { testcases, buildImagePublicUrl, buildImageId } from './testcases.js';
+import { createReadStream } from "fs";
+import { resolve } from "path";
+import { parse } from "csv-parse";
+import fetch from "node-fetch";
+import { testcases, buildImagePublicUrl, buildImageId } from "./testcases.js";
 
 interface CsvRowRaw {
   Hergang: string;
-  'Fotos?': string;
-  'Kunden-Nr.': string;
+  "Fotos?": string;
+  "Kunden-Nr.": string;
   SPARTE: string;
   CLAIMSTATUS: string;
-  'TOTAL SCHADENAUFWAND': string;
+  "TOTAL SCHADENAUFWAND": string;
 }
 
 interface CaseBenchmarkInput {
@@ -48,43 +29,43 @@ interface CaseBenchmarkResult extends CaseBenchmarkInput {
 
 function parseAmount(val: string | undefined): number | null {
   if (!val) return null;
-  const trimmed = val.replace(/\s/g, '').replace(',', '.');
-  if (trimmed === '' || trimmed === '-') return null;
+  const trimmed = val.replace(/\s/g, "").replace(",", ".");
+  if (trimmed === "" || trimmed === "-") return null;
   const num = Number(trimmed);
   return Number.isFinite(num) ? num : null;
 }
 
 async function loadCsv(): Promise<CsvRowRaw[]> {
-  const file = resolve(process.cwd(), '../data/Versicherungsdaten.csv');
+  const file = resolve(process.cwd(), "../data/Versicherungsdaten.csv");
   return new Promise((resolvePromise, reject) => {
     const rows: CsvRowRaw[] = [];
     createReadStream(file)
       .pipe(
         parse({
-          delimiter: ';',
+          delimiter: ";",
           columns: true,
           skip_empty_lines: true,
           relax_column_count: true,
           trim: true,
         })
       )
-      .on('data', (rec: CsvRowRaw) => rows.push(rec))
-      .on('error', reject)
-      .on('end', () => resolvePromise(rows));
+      .on("data", (rec: CsvRowRaw) => rows.push(rec))
+      .on("error", reject)
+      .on("end", () => resolvePromise(rows));
   });
 }
 
 function buildBenchmarkInputs(rows: CsvRowRaw[]): CaseBenchmarkInput[] {
-  const wantedIds = new Set(testcases.map(t => t.id));
+  const wantedIds = new Set(testcases.map((t) => t.id));
   return rows
-    .map(r => {
-      const kundenNr = Number(r['Kunden-Nr.']);
+    .map((r) => {
+      const kundenNr = Number(r["Kunden-Nr."]);
       if (!Number.isFinite(kundenNr)) return null;
       return {
         kundenNr,
-        description: r.Hergang?.trim() ?? '',
+        description: r.Hergang?.trim() ?? "",
         category: r.SPARTE?.trim() || null,
-        historicalAmount: parseAmount(r['TOTAL SCHADENAUFWAND']),
+        historicalAmount: parseAmount(r["TOTAL SCHADENAUFWAND"]),
         publicUrl: buildImagePublicUrl(kundenNr),
         imageId: buildImageId(kundenNr),
       } as CaseBenchmarkInput;
@@ -94,9 +75,9 @@ function buildBenchmarkInputs(rows: CsvRowRaw[]): CaseBenchmarkInput[] {
 
 async function callApi(entry: CaseBenchmarkInput): Promise<number | null> {
   try {
-    const res = await fetch('http://localhost:3000/api/cases', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("http://localhost:3000/api/cases", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         description: entry.description,
         category: entry.category,
@@ -116,20 +97,25 @@ async function callApi(entry: CaseBenchmarkInput): Promise<number | null> {
     const num = Number(maybe);
     return Number.isFinite(num) ? num : null;
   } catch (e) {
-    console.error('API Call Exception', entry.kundenNr, e);
+    console.error("API Call Exception", entry.kundenNr, e);
     return null;
   }
 }
 
 function computeStats(results: CaseBenchmarkResult[]) {
-  const withBoth = results.filter(r => r.historicalAmount != null && r.apiAmount != null && r.errorPct != null);
+  const withBoth = results.filter(
+    (r) =>
+      r.historicalAmount != null && r.apiAmount != null && r.errorPct != null
+  );
   if (withBoth.length === 0) {
     return { count: 0, meanErrorPct: null, stdDevErrorPct: null, mape: null };
   }
-  const errors = withBoth.map(r => r.errorPct!); // signed
-  const absPercents = withBoth.map(r => Math.abs(r.errorPct!));
+  const errors = withBoth.map((r) => r.errorPct!); // signed
+  const absPercents = withBoth.map((r) => Math.abs(r.errorPct!));
   const meanErrorPct = errors.reduce((a, b) => a + b, 0) / errors.length;
-  const variance = errors.reduce((a, b) => a + Math.pow(b - meanErrorPct, 2), 0) / errors.length;
+  const variance =
+    errors.reduce((a, b) => a + Math.pow(b - meanErrorPct, 2), 0) /
+    errors.length;
   const stdDevErrorPct = Math.sqrt(variance);
   // MAPE = mean absolute percentage error (|api - hist|/hist * 100)
   const mape = absPercents.reduce((a, b) => a + b, 0) / absPercents.length;
@@ -137,13 +123,13 @@ function computeStats(results: CaseBenchmarkResult[]) {
 }
 
 async function main() {
-  console.log('Lade CSV...');
+  console.log("Lade CSV...");
   const rows = await loadCsv();
   console.log(`CSV Zeilen gesamt: ${rows.length}`);
   const inputs = buildBenchmarkInputs(rows);
   console.log(`Gefilterte Testfälle: ${inputs.length}`);
 
-  const parallel = Number(process.env.BENCH_PARALLEL || '4');
+  const parallel = Number(process.env.BENCH_PARALLEL || "4");
   const queue = [...inputs];
   const results: CaseBenchmarkResult[] = [];
 
@@ -152,12 +138,18 @@ async function main() {
       const entry = queue.shift();
       if (!entry) break;
       const apiAmount = await callApi(entry);
-      const errorPct = entry.historicalAmount != null && apiAmount != null && entry.historicalAmount !== 0
-        ? ((apiAmount - entry.historicalAmount) / entry.historicalAmount) * 100
-        : null;
+      const errorPct =
+        entry.historicalAmount != null &&
+        apiAmount != null &&
+        entry.historicalAmount !== 0
+          ? ((apiAmount - entry.historicalAmount) / entry.historicalAmount) *
+            100
+          : null;
       results.push({ ...entry, apiAmount, errorPct });
       console.log(
-        `[Fall ${entry.kundenNr}] hist=${entry.historicalAmount ?? 'n/a'} api=${apiAmount ?? 'n/a'} error%=${errorPct?.toFixed(2) ?? 'n/a'}`
+        `[Fall ${entry.kundenNr}] hist=${entry.historicalAmount ?? "n/a"} api=${
+          apiAmount ?? "n/a"
+        } error%=${errorPct?.toFixed(2) ?? "n/a"}`
       );
     }
   }
@@ -165,27 +157,31 @@ async function main() {
   await Promise.all(Array.from({ length: parallel }, () => worker()));
 
   const stats = computeStats(results);
-  console.log('\n=== Benchmark Zusammenfassung ===');
+  console.log("\n=== Benchmark Zusammenfassung ===");
   console.log(`Fälle mit Vergleich: ${stats.count}`);
   if (stats.count > 0) {
-    console.log(`Mittlerer Fehler (signed %): ${stats.meanErrorPct?.toFixed(2)}%`);
-    console.log(`Standardabweichung Fehler (%): ${stats.stdDevErrorPct?.toFixed(2)}%`);
+    console.log(
+      `Mittlerer Fehler (signed %): ${stats.meanErrorPct?.toFixed(2)}%`
+    );
+    console.log(
+      `Standardabweichung Fehler (%): ${stats.stdDevErrorPct?.toFixed(2)}%`
+    );
     console.log(`MAPE (%): ${stats.mape?.toFixed(2)}%`);
   }
 
   // Optionaler Report
   const args = process.argv.slice(2);
-  const reportIdx = args.indexOf('--report');
+  const reportIdx = args.indexOf("--report");
   if (reportIdx !== -1 && args[reportIdx + 1]) {
-    const fs = await import('fs');
+    const fs = await import("fs");
     const reportPath = resolve(process.cwd(), args[reportIdx + 1]);
     const report = { timestamp: new Date().toISOString(), stats, results };
-    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf-8');
+    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), "utf-8");
     console.log(`Report geschrieben: ${reportPath}`);
   }
 }
 
-main().catch(e => {
-  console.error('Benchmark Fehler', e);
+main().catch((e) => {
+  console.error("Benchmark Fehler", e);
   process.exit(1);
 });
