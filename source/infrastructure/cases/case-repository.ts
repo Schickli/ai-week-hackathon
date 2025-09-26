@@ -1,14 +1,15 @@
 import { createClient } from "../supabase/server"; 
 
 export type NextGenDamage = {
-  description: string | null;
-  category: string | null;
+  description: string;
+  category: string;
   case_images: InsertCaseImageRequest[];
-  estimation: number | null;         // numeric
+  estimation: number;         // numeric
   vector: number[] | null;           // Supabase "vector" column
-  case_status: string | null;
-  similar_cases: string[] | null;    // _uuid[]
+  case_status: string;
+  similar_cases: string[];    // _uuid[]
   saveToDB: boolean;
+  ai_image_description?: string | null; 
 };
 
 export type InsertCaseImageRequest = {
@@ -108,6 +109,7 @@ export class CaseRepository {
           vector: data.vector,
           case_status: data.case_status,
           similar_cases: data.similar_cases,
+          ai_image_description: data.ai_image_description,
         },
       ])
       .select("*")

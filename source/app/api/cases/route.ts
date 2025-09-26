@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     // Map incoming payload to DB insert shape
     const payload: NextGenDamage = {
-      description: body.description ?? null,
+      description: body.description,
       category: "TEST",
       case_images: body.case_images.map(image => {
         return {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
       estimation: 1000, // not provided yet
       vector: null, // will be filled later with embedding
       case_status: "created", // could default to "new" if you want
-      similar_cases: null, // none yet
+      similar_cases: [], // none yet
     };
 
     const result = await processCase(payload);
