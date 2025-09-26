@@ -31,7 +31,6 @@ export type CaseImage = {
 
 const TABLE = "next-gen-damage";
 const IMAGE_TABLE = "case-images";
-const SCHEMA = "public";
 
 export class CaseRepository {
   static async get(id: string): Promise<GetCaseResponse | null> {

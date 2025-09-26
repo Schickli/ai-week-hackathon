@@ -19,7 +19,9 @@ export async function GET(
     }
 
     return NextResponse.json<GetCaseResponse>(data);
-  } catch (err: any) {
+  } catch (err: {
+    message: string;
+  }) {
     return NextResponse.json(
       { error: err.message ?? "Unknown error" },
       { status: 500 }
@@ -47,7 +49,9 @@ export async function PATCH(
 
     // Return no content (204)
     return new Response(null, { status: 204 });
-  } catch (err: any) {
+  } catch (err: {
+    message: string;
+  }) {
     return NextResponse.json(
       { error: err.message ?? "Unknown error" },
       { status: 500 }
