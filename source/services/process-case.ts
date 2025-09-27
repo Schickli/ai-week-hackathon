@@ -24,8 +24,13 @@ export async function processCase(payload: NextGenDamage) {
   payload.similar_cases = similarCases.map((c: any) => c.id);
 
   // Prompt AI for estimation
-  const estimation = await promptAIForEstimation(payload, similarCases);
-  payload.estimation = Number(estimation);
+  const data = await promptAIForEstimation(payload, similarCases);
+
+    console.log("Estimated cost: ", data.text);
+    console.log("Sources: ", data.sources);
+    console.log("Provider Metadata: ", data.providerMetadata);
+
+  payload.estimation = Number(data.text);
 
   console.log("Similar cases found:", similarCases);
 
@@ -113,10 +118,10 @@ async function promptAIForEstimation(
             "AI GENERATED DESCRIPTION OF THE IMAGES: " +
             payload.ai_image_description,
         },
-        {
-          type: "text",
-          text: `SIMILAR CASES FOUND: ${JSON.stringify(similarCases)}`,
-        },
+        // {
+        //   type: "text",
+        //   text: `SIMILAR CASES FOUND: ${JSON.stringify(similarCases)}`,
+        // },
       ],
     },
   ]);

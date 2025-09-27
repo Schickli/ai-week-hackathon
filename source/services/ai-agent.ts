@@ -7,6 +7,7 @@ import {
   UserModelMessage,
 } from "ai";
 import { createAzure } from "@ai-sdk/azure";
+import { perplexity } from "@ai-sdk/perplexity";
 
 const azure = createAzure();
 
@@ -18,13 +19,18 @@ export async function promptAI(
     | ToolModelMessage
   >
 ) {
-  const { text } = await generateText({
-    model: azure("gpt-5"),
+  const { text, sources, providerMetadata } = await generateText({
+    model: perplexity("sonar-pro"),
     system: systemPromptEstimation,
     messages: messages,
+    providerOptions: {
+      perplexity: {
+        return_images: true, // Enable image responses (Tier-2 Perplexity users only)
+      },
+    },
   });
 
-  return text;
+  return { text: text, sources: sources, providerMetadata: providerMetadata };
 }
 
 export async function generateEmbedding(text: string) {
@@ -57,7 +63,7 @@ const systemPromptEstimation = `
 You are an AI assistant that helps to estimate repair costs based on descriptions of damage and similar past cases.
 Given a description of the damage and a list of similar cases with their repair costs, provide a concise cost estimate for the new case.
 If there are no similar cases, provide a rough estimate based on the description alone.
-Respond with a single numeric value representing the estimated cost in Swiss Francs.
+Respond with a ONLY A SINGLE NUMERIC value representing the estimated cost in Swiss Francs.
 Estimate everything on Swiss Price levels.
 `;
 
