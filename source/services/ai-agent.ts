@@ -3,9 +3,12 @@ import {
   embed,
   generateText,
   SystemModelMessage,
+  tool,
   ToolModelMessage,
   UserModelMessage,
 } from "ai";
+import { scrapeProductPrices } from "./serpapi-scraper";
+import { z } from "zod";
 import { createAzure } from "@ai-sdk/azure";
 import { perplexity } from "@ai-sdk/perplexity";
 

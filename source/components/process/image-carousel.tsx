@@ -36,20 +36,27 @@ export default function CaseImageCarousel({ images }: Props) {
 
   return (
     <div className="w-full min-h-[18rem] flex flex-col">
-      <div className="relative w-full">
-        <Carousel className="w-full h-72">
+      <div className="relative w-full" style={{ height: 'min(32rem, calc(100vh - 320px))' }}>
+        <Carousel className="w-full h-full">
           <CarouselContent>
             {images.map((img, idx) => (
-              <CarouselItem key={img.id || idx} className="h-72">
-                <Image
-                  width={100}
-                  height={100}
-                  src={img.image_public_url}
-                  alt={`Damage ${idx + 1}`}
-                  className="w-full h-72 object-cover rounded-t-2xl shadow-lg border-none cursor-pointer"
-                  style={{ fontFamily: "Poppins, sans-serif" }}
-                  onClick={() => setSelectedIndex(idx)}
-                />
+              <CarouselItem key={img.id || idx} className="h-125 flex items-center justify-center">
+                <div
+                  className="relative w-full h-full bg-white rounded-t-2xl"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100%', minWidth: '100%' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                    <Image
+                      src={img.image_public_url}
+                      alt={`Damage ${idx + 1}`}
+                      fill
+                      className="object-contain rounded-t-2xl shadow-lg border-none cursor-pointer"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                      onClick={() => setSelectedIndex(idx)}
+                      sizes="(max-width: 900px) 100vw, 900px"
+                    />
+                  </div>
+                </div>
               </CarouselItem>
             ))}
           </CarouselContent>
