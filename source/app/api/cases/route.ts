@@ -26,6 +26,9 @@ export async function POST(req: Request) {
       vector: null, // will be filled later with embedding
       case_status: "created", // could default to "new" if you want
       similar_cases: [], // none yet
+      ai_image_description: null,
+      sources: null,
+      providerMetadata: null,
     };
 
     const result = await processCase(payload);
