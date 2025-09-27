@@ -153,14 +153,7 @@ export default function Process() {
                   {similarCases.slice(0, 3).map((c) => (
                     <li key={c.id} className="flex flex-col items-stretch p-0 rounded-xWl bg-white shadow-sm hover:shadow-md transition-shadow">
                       <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-t-xl overflow-hidden">
-                        <Image
-                          fill
-                          src={c.case_images?.[0]?.image_public_url || '/placeholder.jpg'}
-                          alt="Similar case"
-                          className="object-contain w-full h-full rounded-t-xl"
-                          style={{ fontFamily: 'Poppins, sans-serif' }}
-                          sizes="(max-width: 400px) 100vw, 400px"
-                        />
+                        <CaseImageCarousel images={c.case_images ?? []} />
                       </div>
                       <div className="flex flex-col items-start w-full px-3 py-2 text-sm text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {c.description}
@@ -203,20 +196,15 @@ export default function Process() {
                   </div>
                   <div className="flex flex-col items-start px-8 py-6">
                     <span className="text-xl font-bold text-gray-800 tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                      Description
+                      {caseData.description ?? ''}
                     </span>
                     <div className="mb-4 text-gray-700 text-base" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                      {caseData.description ?? ''}
+                      {caseData.category ?? ''}
                     </div>
                     <div className="mb-2 flex items-center gap-4">
                       <span className="text-2xl font-extrabold text-blue-600" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {caseData.estimation !== null ? `${caseData.estimation}.-` : 'No estimate'}
                       </span>
-                      {typeof caseData.estimation === 'number' && (
-                        <span className="text-lg font-semibold text-green-600 bg-green-100 px-3 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                          {`Confidence: ${(1 * 100).toFixed(1)}%`}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </>

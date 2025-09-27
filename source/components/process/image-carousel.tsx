@@ -41,16 +41,21 @@ export default function CaseImageCarousel({ images }: Props) {
           <CarouselContent>
             {images.map((img, idx) => (
               <CarouselItem key={img.id || idx} className="h-125 flex items-center justify-center">
-                <div className="relative w-full h-full flex items-center justify-center bg-white rounded-t-2xl">
-                  <Image
-                    src={img.image_public_url}
-                    alt={`Damage ${idx + 1}`}
-                    fill
-                    className="object-contain w-full h-full rounded-t-2xl shadow-lg border-none cursor-pointer"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
-                    onClick={() => setSelectedIndex(idx)}
-                    sizes="(max-width: 900px) 100vw, 900px"
-                  />
+                <div
+                  className="relative w-full h-full bg-white rounded-t-2xl"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100%', minWidth: '100%' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                    <Image
+                      src={img.image_public_url}
+                      alt={`Damage ${idx + 1}`}
+                      fill
+                      className="object-contain rounded-t-2xl shadow-lg border-none cursor-pointer"
+                      style={{ fontFamily: "Poppins, sans-serif" }}
+                      onClick={() => setSelectedIndex(idx)}
+                      sizes="(max-width: 900px) 100vw, 900px"
+                    />
+                  </div>
                 </div>
               </CarouselItem>
             ))}
