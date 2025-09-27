@@ -36,20 +36,19 @@ export default function CaseImageCarousel({ images }: Props) {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="relative w-full min-h-[16rem] max-h-[26rem]">
-        <Carousel className="w-full h-full min-h-[16rem] max-h-[26rem]">
+      <div className="relative w-full">
+        <Carousel className="w-full">
           <CarouselContent>
             {images.map((img, idx) => (
-              <CarouselItem key={img.id || idx} className="flex items-center justify-center h-full w-full">
-                <div
-                  className="relative w-full h-full min-h-[16rem] max-h-[26rem] bg-white rounded-t-2xl flex items-center justify-center"
-                >
+              <CarouselItem key={img.id || idx} className="flex items-center justify-center">
+                <div className="relative bg-white rounded-t-2xl flex items-center justify-center" style={{ display: 'inline-block' }}>
                   <Image
                     src={img.image_public_url}
                     alt={`Damage ${idx + 1}`}
-                    fill
+                    width={500}
+                    height={400}
                     className="object-contain rounded-t-2xl shadow-lg border-none cursor-pointer"
-                    style={{ fontFamily: "Poppins, sans-serif" }}
+                    style={{ fontFamily: "Poppins, sans-serif", maxWidth: '100%', height: 'auto', display: 'block' }}
                     onClick={() => setSelectedIndex(idx)}
                     sizes="(max-width: 900px) 100vw, 900px"
                   />
