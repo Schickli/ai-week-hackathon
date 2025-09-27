@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
-import '../../components/process/custom-cursor.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,13 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   // Lazy load to avoid SSR issues
-  const CustomCursor = require('../../components/process/CustomCursor').default;
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased p-2`}
       >
-        <CustomCursor />
         {children}
       </body>
     </html>
