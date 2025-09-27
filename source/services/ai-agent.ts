@@ -2,6 +2,7 @@ import {
   AssistantModelMessage,
   embed,
   generateText,
+  stepCountIs,
   SystemModelMessage,
   tool,
   ToolModelMessage,
@@ -21,31 +22,25 @@ export async function promptAI(
     | ToolModelMessage
   >
 ) {
-  const { text, toolResults } = await generateText({
+  const { text } = await generateText({
     model: azure("gpt-5"),
-    tools: {
-      getProductPrices: tool({
-        description: 'Get prices for a product name using SerpAPI Google Shopping.',
-        inputSchema: z.object({
-          productName: z.string().describe('The name of the product to search prices for'),
-          limit: z.number().describe('Maximum number of price results to return'),
-        }),
-        execute: async ({ productName, limit }: { productName: string; limit: number }) => {
-          const prices = await scrapeProductPrices(productName, limit);
-          console.log(`Scraped ${prices.length} prices for product "${productName}"`);
-          return prices;
-        },
-      }),
-    },
+    // tools: {
+    //   getProductPrices: tool({
+    //     description: "Get prices for a product name using SerpAPI Google Shopping.",
+    //     inputSchema: z.object({
+    //       productName: z.string(),
+    //     }),
+    //     execute: async ({ productName }) => ({
+    //       products: await scrapeProductPrices(productName),
+    //     }),
+    //   }),
+    // },
     system: systemPromptEstimation,
-    messages: messages,
+    messages,
   });
 
-  // If the AI called the tool, return its result, otherwise return the text
-  if (toolResults && toolResults.length > 0) {
-    return toolResults[0].output;
-  }
-  return text;
+  return text.trim(); // Should always be a numeric value
+
 }
 
 export async function generateEmbedding(text: string) {
@@ -78,7 +73,8 @@ const systemPromptEstimation = `
 You are an AI assistant that helps to estimate repair costs based on descriptions of damage and similar past cases.
 Given a description of the damage and a list of similar cases with their repair costs, provide a concise cost estimate for the new case.
 If there are no similar cases, provide a rough estimate based on the description alone.
-Respond with a single numeric value representing the estimated cost in Swiss Francs.
+ALWAYS use the provided webscraping tool to get a price range for specific products mentioned in the description. Do not search for a specific part replacement, search for the general (new) product. Use this pricing information to readjust/ground your estimate accordingly.
+ALWAYS Respond with a SINGLE numeric value representing the estimated cost in Swiss Francs.
 Estimate everything on Swiss Price levels.
 `;
 
