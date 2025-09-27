@@ -10,29 +10,8 @@ import { GetCaseResponse } from "@/infrastructure/cases/case-repository";
 import Image from "next/image";
 import CaseImageCarousel from "./image-carousel";
 
-const mockSimilarCases = [
-  {
-    id: 2,
-    imageUrl: "https://aexkfdacfobwtdqwrtid.supabase.co/storage/v1/object/public/damage-images/v0/Download%20(1).jpg",
-    description: "Rear bumper scratch",
-    cost: "800.-",
-    similarity: "92%"
-  },
-  {
-    id: 3,
-    imageUrl: "https://aexkfdacfobwtdqwrtid.supabase.co/storage/v1/object/public/damage-images/v0/Download%20(1).jpg",
-    description: "Side door dent",
-    cost: "950.-",
-    similarity: "88%"
-  },
-  {
-    id: 4,
-    imageUrl: "https://aexkfdacfobwtdqwrtid.supabase.co/storage/v1/object/public/damage-images/v0/Download%20(1).jpg",
-    description: "Front fender damage",
-    cost: "1,050.-",
-    similarity: "85%"
-  }
-];
+// Removed mockSimilarCases. Will fetch real similar cases from API.
+
 
 export default function Process() {
   const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
@@ -49,13 +28,36 @@ export default function Process() {
   };
   const [loading, setLoading] = useState(false);
   const [caseData, setCaseData] = useState<GetCaseResponse | null>(null);
-  const [similarCases] = useState(mockSimilarCases);
+  const [similarCases, setSimilarCases] = useState<GetCaseResponse[]>([]);
   const [judgedCount, setJudgedCount] = useState(0);
   const [unjudgedCount, setUnjudgedCount] = useState(0);
   const [scrapedPrices, setScrapedPrices] = useState<Array<{ title: string, price: string, source: string, thumbnail: string }>>([]);
   const [scrapeLoading, setScrapeLoading] = useState(false);
   const [scrapeError, setScrapeError] = useState<string | null>(null);
   const [scrapedProduct, setScrapedProduct] = useState<string | null>(null);
+  // Fetch similar cases when caseData changes
+  useEffect(() => {
+    const fetchSimilarCases = async () => {
+      if (!caseData || !Array.isArray(caseData.similar_cases) || caseData.similar_cases.length === 0) {
+        setSimilarCases([]);
+        return;
+      }
+      try {
+        const results: GetCaseResponse[] = [];
+        for (const uuid of caseData.similar_cases) {
+          const res = await fetch(`/api/cases/${uuid}`);
+          if (res.ok) {
+            const data = await res.json();
+            results.push(data);
+          }
+        }
+        setSimilarCases(results);
+      } catch (err) {
+        setSimilarCases([]);
+      }
+    };
+    fetchSimilarCases();
+  }, [caseData]);
 
   useEffect(() => {
     setScrapeActive(false);
@@ -144,37 +146,36 @@ export default function Process() {
                 <TrendingUp className="w-7 h-7 text-blue-400 drop-shadow" />
                 <span className="drop-shadow">Similar Cases</span>
               </div>
-              <ul className="space-y-6">
-                {similarCases.slice(0, 3).map((c) => (
-                  <li key={c.id} className="flex flex-col items-center p-0 rounded-xWl bg-white shadow-sm hover:shadow-md transition-shadow">
-                    <Image
-                      width={100}
-                      height={100}
-                      src={c.imageUrl}
-                      alt="Similar case"
-                      className="w-full h-32 object-cover rounded-t-xl"
-                      style={{ fontFamily: 'Poppins, sans-serif' }}
-                    />
-                    <div className="w-full px-3 py-2 text-sm text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                      {c.description}
-                    </div>
-                    <div className="flex w-full justify-between items-end px-3 pb-2">
-                      <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {c.similarity} Similarity
-                      </span>
-                      <span className="text-base font-bold text-green-600 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {c.cost}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              {similarCases.length === 0 ? (
+                <div className="text-gray-500 text-sm mt-6">No similar cases found.</div>
+              ) : (
+                <ul className="space-y-6">
+                  {similarCases.slice(0, 3).map((c) => (
+                    <li key={c.id} className="flex flex-col items-stretch p-0 rounded-xWl bg-white shadow-sm hover:shadow-md transition-shadow">
+                      <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-t-xl overflow-hidden">
+                        <CaseImageCarousel images={c.case_images ?? []} />
+                      </div>
+                      <div className="flex flex-col items-start w-full px-3 py-2 text-sm text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        {c.description}
+                      </div>
+                      <div className="flex w-full justify-between items-end px-3 pb-2">
+                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                          {/* No similarity available */}
+                        </span>
+                        <span className="text-base font-bold text-green-600 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                          {typeof c.estimation === 'number' ? `${c.estimation}.-` : 'No estimate'}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </Card>
           </div>
 
           {/* Active Case Center */}
           <div className="flex-1 flex flex-col items-center justify-center">
-            <Card className="flex flex-col p-0 w-full max-w-3xl bg-white shadow-2xl rounded-2xl border-none overflow-hidden min-h-[20rem]">
+            <Card className="flex flex-col p-0 w-full max-w-5xl bg-white shadow-2xl rounded-2xl border-none overflow-hidden min-h-[40rem]">
               {loading ? (
                 <div className="flex flex-col items-center justify-center min-h-[22rem] gap-4">
                   <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -185,28 +186,25 @@ export default function Process() {
                 </div>
               ) : caseData ? (
                 <>
-                  <CaseImageCarousel images={caseData.case_images ?? []} />
-                  <div className="flex flex-col items-start px-8 py-6">
-                    <div className="mb-2 flex items-center justify-between w-full">
-                      <span className="text-xl font-bold text-gray-800 tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        Description
+                  <div className="relative w-full h-auto">
+                    <CaseImageCarousel images={caseData.case_images ?? []} />
+                    {caseData.created_at && (
+                      <span className="absolute bottom-4 right-8 bg-white/80 px-3 py-1 rounded-lg text-xs font-medium text-gray-600 shadow" style={{ fontFamily: 'var(--font-sans)' }}>
+                        {`Created: ${new Date(caseData.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
                       </span>
-                      {caseData.created_at && (
-                        <span className="bg-white/80 px-3 py-1 rounded-lg text-xs font-medium text-gray-600 shadow ml-4" style={{ fontFamily: 'var(--font-sans)' }}>
-                          {`Created: ${new Date(caseData.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
-                        </span>
-                      )}
+                    )}
+                  </div>
+                  <div className="flex flex-col items-start px-8 py-6">
+                    <span className="text-xl font-bold text-gray-800 tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                      {caseData.description ?? ''}
+                    </span>
+                    <div className="mb-4 text-gray-700 text-base" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                      {caseData.category ?? ''}
                     </div>
-                    <div className="mb-4 text-gray-700 text-base" style={{ fontFamily: 'Poppins, sans-serif' }}>{caseData.description ?? ''}</div>
                     <div className="mb-2 flex items-center gap-4">
                       <span className="text-2xl font-extrabold text-blue-600" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {caseData.estimation !== null ? `${caseData.estimation}.-` : 'No estimate'}
                       </span>
-                      {typeof caseData.estimation === 'number' && (
-                        <span className="text-lg font-semibold text-green-600 bg-green-100 px-3 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                          {`Confidence: ${(1 * 100).toFixed(1)}%`}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </>
