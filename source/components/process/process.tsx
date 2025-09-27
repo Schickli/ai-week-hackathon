@@ -132,7 +132,7 @@ export default function Process() {
     <div className="flex flex-col h-auto w-auto">
       <div className="w-full mb-4">
         <div className="flex items-center gap-2 mb-2 justify-end">
-          <span className="text-xs px-3 py-1 rounded-full bg-gray-200 font-medium">
+          <span className="text-xs px-3 py-1 rounded-full bg-muted font-medium">
             {judgedCount} of {judgedCount + unjudgedCount}
           </span>
           <Button variant="ghost" size="icon" className="size-8" onClick={handleRefresh()}>
@@ -146,30 +146,30 @@ export default function Process() {
         <div className="flex w-[90vw] gap-8 ">
           {/* Similar Cases Sidebar */}
           <div className="w-1/3 min-w-[160px] max-w-[300px] shadow-2xl rounded-2xl">
-            <Card className="p-0 flex flex-col bg-white rounded-2xl max-h-[81vh]">
+            <Card className="p-0 flex flex-col bg-card rounded-2xl max-h-[81vh]">
               <ScrollArea style={{ height: '81vh' }}>
                 <div className="p-6">
-                  <div className="flex items-center gap-3 text-l font-bold tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
-                    <TrendingUp className="w-7 h-7 text-blue-400 drop-shadow" />
+                  <div className="flex items-center gap-3 text-l font-bold tracking-tight mb-2" style={{ fontFamily: 'var(--font-sans)', letterSpacing: '0.05em' }}>
+                    <TrendingUp className="w-7 h-7 text-primary drop-shadow" />
                     <span className="drop-shadow">Similar Cases</span>
                   </div>
                   {similarCases.length === 0 ? (
-                    <div className="text-gray-500 text-sm mt-6">No similar cases found.</div>
+                    <div className="text-muted-foreground text-sm mt-6">No similar cases found.</div>
                   ) : (
                     <ul className="space-y-6">
                       {similarCases.slice(0, 3).map((c) => (
-                        <li key={c.id} className="flex flex-col items-stretch p-0 rounded-xWl bg-white shadow-sm hover:shadow-md transition-shadow">
-                          <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-t-xl overflow-hidden">
+                        <li key={c.id} className="flex flex-col items-stretch p-0 rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
+                          <div className="relative w-full aspect-[4/3] bg-muted rounded-t-xl overflow-hidden">
                             <CaseImageCarousel images={c.case_images ?? []} />
                           </div>
-                          <div className="flex flex-col items-start w-full px-3 py-2 text-xs text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                          <div className="flex flex-col items-start w-full px-3 py-2 text-xs text-foreground" style={{ fontFamily: 'var(--font-sans)' }}>
                             {c.description}
                           </div>
                           <div className="flex w-full justify-between items-end px-3 pb-2">
-                            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-full" style={{ fontFamily: 'var(--font-sans)' }}>
                               Similarity: {typeof c.similarity === 'number' ? `${(c.similarity * 100).toFixed(1)}%` : 'N/A'}
                             </span>
-                            <span className="text-sm font-bold text-green-600 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            <span className="text-sm font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full" style={{ fontFamily: 'var(--font-sans)' }}>
                               {typeof c.estimation === 'number' ? `${c.estimation}.-` : 'No estimate'}
                             </span>
                           </div>
@@ -184,7 +184,7 @@ export default function Process() {
 
           {/* Active Case Center */}
           <div className="flex-1 flex flex-col items-center justify-center">
-            <Card className="flex flex-col p-0 w-full max-w-3xl bg-white shadow-2xl rounded-2xl border-none overflow-hidden min-h-[30rem]">
+            <Card className="flex flex-col p-0 w-full max-w-3xl bg-card shadow-2xl rounded-2xl border-none overflow-hidden min-h-[30rem]">
               {loading ? (
                 <div className="flex flex-col items-center justify-center min-h-[12rem] gap-4">
                   <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -198,37 +198,37 @@ export default function Process() {
                   <div className="relative w-full h-auto">
                     <ActiveCaseImageCarousel images={caseData.case_images ?? []} />
                     {caseData.created_at && (
-                      <span className="absolute bottom-4 right-8 bg-white/80 px-3 py-1 rounded-lg text-xs font-medium text-gray-600 shadow" style={{ fontFamily: 'var(--font-sans)' }}>
+                      <span className="absolute bottom-4 right-8 bg-card/80 px-3 py-1 rounded-lg text-xs font-medium text-muted-foreground shadow" style={{ fontFamily: 'var(--font-sans)' }}>
                         {`Created: ${new Date(caseData.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
                       </span>
                     )}
                   </div>
                   <div className="flex flex-col items-start px-8 py-4">
                     <div className="flex w-full items-center mb-1">
-                      <span className="text-md font-bold text-gray-800 tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                      <span className="text-md font-bold text-foreground tracking-tight" style={{ fontFamily: 'var(--font-sans)' }}>
                         {caseData.description ?? ''}
                       </span>
                       <div className="flex-1" />
                       {caseData.category && (
-                        <span className="inline-block px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-xs font-semibold tracking-wide shadow-sm ml-4" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
+                        <span className="inline-block px-3 py-1 rounded-full bg-muted text-muted-foreground text-xs font-semibold tracking-wide shadow-sm ml-4" style={{ fontFamily: 'var(--font-sans)', letterSpacing: '0.05em' }}>
                           {caseData.category}
                         </span>
                       )}
                     </div>
                     {caseData.ai_image_description && (
-                      <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 mb-2 mt-1 shadow-sm">
-                        <Brain className="w-12 h-12 text-blue-500 mx-2" />
-                        <span className="text-sm text-blue-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                      <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 mb-2 mt-1 shadow-sm">
+                        <Brain className="w-12 h-12 text-primary mx-2" />
+                        <span className="text-sm text-primary" style={{ fontFamily: 'var(--font-sans)' }}>
                           {caseData.ai_image_description}
                         </span>
                       </div>
                     )}
-                    <div className="flex w-full items-center bg-green-50 border border-green-200 rounded-xl px-3 py-2 mb-2 shadow-sm">
-                      <span className="text-sm font-semibold text-green-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <div className="flex w-full items-center bg-green-100 border border-green-300 rounded-xl px-3 py-2 mb-2 shadow-sm">
+                      <span className="text-sm font-semibold text-green-700" style={{ fontFamily: 'var(--font-sans)' }}>
                         AI Estimated Value
                       </span>
                       <div className="flex-1" />
-                      <span className="text-xl font-extrabold text-green-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                      <span className="text-xl font-extrabold text-green-700" style={{ fontFamily: 'var(--font-sans)' }}>
                         {caseData.estimation !== null ? `${caseData.estimation}.-` : 'No estimate'}
                       </span>
                     </div>
@@ -236,7 +236,7 @@ export default function Process() {
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center min-h-[22rem]">
-                  <span className="text-gray-500">No unjudged cases available.</span>
+                  <span className="text-muted-foreground">No unjudged cases available.</span>
                 </div>
               )}
             </Card>
@@ -263,29 +263,29 @@ export default function Process() {
 
           {(scrapeActive || (caseData && ((Array.isArray(caseData.sources) && caseData.sources.length > 0) || caseData.provider_metadata))) && (
             <div className="w-1/3 min-w-[160px] max-w-[300px] rounded-2xl">
-              <Card className="p-6 flex flex-col bg-white rounded-2xl overflow-y-auto">
-                <div className="flex items-center gap-3 text-l font-bold tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
-                  <TrendingUp className="w-7 h-7 text-purple-400 drop-shadow" />
+              <Card className="p-6 flex flex-col bg-card rounded-2xl overflow-y-auto">
+                <div className="flex items-center gap-3 text-l font-bold tracking-tight mb-2" style={{ fontFamily: 'var(--font-sans)', letterSpacing: '0.05em' }}>
+                  <TrendingUp className="w-7 h-7 text-primary drop-shadow" />
                   <span className="drop-shadow">Web search results</span>
                 </div>
                 {scrapeLoading ? (
                   <div className="flex flex-col items-center justify-center min-h-[10rem] gap-2">
-                    <svg className="animate-spin h-8 w-8 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                     </svg>
-                    <span className="text-purple-500 text-base font-medium">Scraping prices...</span>
+                    <span className="text-primary text-base font-medium">Scraping prices...</span>
                   </div>
                 ) : scrapeError ? (
-                  <div className="text-red-500 text-sm font-medium">{scrapeError}</div>
+                  <div className="text-destructive text-sm font-medium">{scrapeError}</div>
                 ) : (
                   <>
                     {caseData?.sources && Array.isArray(caseData.sources) && caseData.sources.length > 0 && (
                       <div className="mt-6">
-                        <div className="text-xs font-bold text-gray-500 mb-1">Websearch Sources</div>
+                        <div className="text-xs font-bold text-muted-foreground mb-1">Websearch Sources</div>
                         <ul className="space-y-2">
                           {caseData.sources.map((src, idx) => (
-                            <li key={idx} className="text-xs text-blue-700 bg-gray-50 rounded px-2 py-1 break-all">
+                            <li key={idx} className="text-xs text-primary bg-muted rounded px-2 py-1 break-all">
                               {src.url ? (
                                 <a href={src.url} target="_blank" rel="noopener noreferrer" className="underline">
                                   {src.url}
