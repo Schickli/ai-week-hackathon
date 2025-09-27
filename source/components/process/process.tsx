@@ -7,6 +7,8 @@ import { Progress } from "../ui/progress";
 import { DeclineDialog } from "./decline-dialog";
 import { RefreshCcw, Check, TrendingUp } from "lucide-react"
 import { GetCaseResponse } from "@/infrastructure/cases/case-repository";
+
+type SimilarCaseWithConfidence = GetCaseResponse & { similarity: number };
 import Image from "next/image";
 import CaseImageCarousel from "./image-carousel";
 
@@ -28,14 +30,14 @@ export default function Process() {
   };
   const [loading, setLoading] = useState(false);
   const [caseData, setCaseData] = useState<GetCaseResponse | null>(null);
-  const [similarCases, setSimilarCases] = useState<GetCaseResponse[]>([]);
+  const [similarCases, setSimilarCases] = useState<SimilarCaseWithConfidence[]>([]);
   const [judgedCount, setJudgedCount] = useState(0);
   const [unjudgedCount, setUnjudgedCount] = useState(0);
   const [scrapedPrices, setScrapedPrices] = useState<Array<{ title: string, price: string, source: string, thumbnail: string }>>([]);
   const [scrapeLoading, setScrapeLoading] = useState(false);
   const [scrapeError, setScrapeError] = useState<string | null>(null);
   const [scrapedProduct, setScrapedProduct] = useState<string | null>(null);
-  // Fetch similar cases when caseData changes
+  // Fetch similar cases when caseData changes (new structure)
   useEffect(() => {
     const fetchSimilarCases = async () => {
       if (!caseData || !Array.isArray(caseData.similar_cases) || caseData.similar_cases.length === 0) {
@@ -43,12 +45,13 @@ export default function Process() {
         return;
       }
       try {
-        const results: GetCaseResponse[] = [];
-        for (const uuid of caseData.similar_cases) {
-          const res = await fetch(`/api/cases/${uuid}`);
+        const results: SimilarCaseWithConfidence[] = [];
+        for (const simObj of caseData.similar_cases) {
+          if (!simObj.similar_case_id) continue;
+          const res = await fetch(`/api/cases/${simObj.similar_case_id}`);
           if (res.ok) {
             const data = await res.json();
-            results.push(data);
+            results.push({ ...data, similarity: simObj.similarity });
           }
         }
         setSimilarCases(results);
@@ -140,8 +143,8 @@ export default function Process() {
       <div className="flex justify-center items-center">
         <div className="flex w-[90vw] gap-8">
           {/* Similar Cases Sidebar */}
-          <div className="w-1/3 min-w-[260px] max-w-[400px] overflow-y-auto shadow-2xl rounded-2xl">
-            <Card className="p-6 h-full flex flex-col bg-white rounded-2xl">
+          <div className="w-1/3 min-w-[260px] max-w-[400px] shadow-2xl rounded-2xl">
+            <Card className="p-6 flex flex-col bg-white rounded-2xl max-h-[75vh] overflow-y-auto">
               <div className="flex items-center gap-3 text-xl font-bold tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
                 <TrendingUp className="w-7 h-7 text-blue-400 drop-shadow" />
                 <span className="drop-shadow">Similar Cases</span>
@@ -159,8 +162,8 @@ export default function Process() {
                         {c.description}
                       </div>
                       <div className="flex w-full justify-between items-end px-3 pb-2">
-                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                          {/* No similarity available */}
+                        <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                          Similarity: {typeof c.similarity === 'number' ? `${(c.similarity * 100).toFixed(1)}%` : 'N/A'}
                         </span>
                         <span className="text-base font-bold text-green-600 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
                           {typeof c.estimation === 'number' ? `${c.estimation}.-` : 'No estimate'}

@@ -2,6 +2,7 @@ import {
   AssistantModelMessage,
   embed,
   generateText,
+  stepCountIs,
   SystemModelMessage,
   tool,
   ToolModelMessage,
