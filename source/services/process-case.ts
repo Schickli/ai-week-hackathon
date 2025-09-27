@@ -23,7 +23,7 @@ export async function processCase(payload: NextGenDamage) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload.similar_cases = similarCases.map((c: any) => {
     return {
-      case_id: c.id,
+      similar_case_id: c.id,
       similarity: c.similarity
     }
   });

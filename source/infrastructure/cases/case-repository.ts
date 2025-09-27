@@ -13,6 +13,7 @@ export type NextGenDamage = {
 };
 
 export type SimilarCase = {
+  similar_case_id: string;
   case_id: string;
   similarity: number;
 }
@@ -39,6 +40,7 @@ export type SimilarCaseRow = {
   id: string;
   case_id: string;     // the similar case's id
   similarity: number;
+  similar_case_id: string;
 };
 
 const TABLE = "next-gen-damage";
@@ -66,10 +68,11 @@ export class CaseRepository {
           image_id,
           image_public_url
         ),
-        similar_cases:"${SIMILAR_TABLE}" (
+        similar_cases:"similar-case_case_id_fkey" (
           id,
           case_id,
-          similarity
+          similarity,
+          similar_case_id
         )
       `)
       .eq("id", id)
@@ -98,10 +101,11 @@ export class CaseRepository {
           image_id,
           image_public_url
         ),
-        similar_cases:"${SIMILAR_TABLE}" (
+        similar_cases:"similar-case_case_id_fkey"   (
           id,
           case_id,
-          similarity
+          similarity,
+          similar_case_id
         )
       `)
       .order("created_at", { ascending: false });
@@ -151,6 +155,7 @@ export class CaseRepository {
       const similarToInsert = data.similar_cases.map((s) => ({
         [SIMILAR_FK_TO_CASE]: caseInserted.id, // <-- link to this case
         similarity: s.similarity,
+        similar_case_id: s.similar_case_id
       }));
 
       const { error: similarError } = await supabase
@@ -168,6 +173,7 @@ export class CaseRepository {
         id: "", // not known unless you reselect
         case_id: s.case_id,
         similarity: s.similarity,
+        similar_case_id: s.similar_case_id
       })) ?? [],
     } as GetCaseResponse;
   }
