@@ -11,29 +11,31 @@ import { createClient } from "@/infrastructure/supabase/server";
 
 export async function processCase(payload: NextGenDamage) {
   console.log("Processing case:", payload.description);
-  
-    // Generate Embeddings
+
+  // Generate Embeddings
   const result = await getEmbedding(payload);
   payload.vector = result.embedding;
   payload.ai_image_description = result.desc;
 
   // Search similar cases
   const similarCases = await searchSimilarCases(payload);
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload.similar_cases = similarCases.map((c: any) => {
     return {
       similar_case_id: c.id,
-      similarity: c.similarity
-    }
+      similarity: c.similarity,
+    };
   });
 
   // Prompt AI for estimation
   const data = await promptAIForEstimation(payload, similarCases);
 
-    console.log("Estimated cost: ", data.text);
-    console.log("Sources: ", data.sources);
-    console.log("Provider Metadata: ", data.providerMetadata);
+  payload.providerMetadata = data.providerMetadata || {};
+  payload.sources = data.sources || [];
+  console.log("Estimated cost: ", data.text);
+  console.log("Sources: ", data.sources);
+  console.log("Provider Metadata: ", data.providerMetadata);
 
   payload.estimation = Number(data.text);
 
