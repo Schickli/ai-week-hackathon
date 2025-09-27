@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
+import { ScrollArea } from "../ui/scroll-area";
 import { Progress } from "../ui/progress";
 import { DeclineDialog } from "./decline-dialog";
 import { RefreshCcw, Check, TrendingUp, Brain } from "lucide-react"
@@ -145,35 +146,39 @@ export default function Process() {
         <div className="flex w-[90vw] gap-8 ">
           {/* Similar Cases Sidebar */}
           <div className="w-1/3 min-w-[160px] max-w-[300px] shadow-2xl rounded-2xl">
-            <Card className="p-6 flex flex-col bg-white rounded-2xl max-h-[80vh] overflow-y-auto">
-              <div className="flex items-center gap-3 text-l font-bold tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
-                <TrendingUp className="w-7 h-7 text-blue-400 drop-shadow" />
-                <span className="drop-shadow">Similar Cases</span>
-              </div>
-              {similarCases.length === 0 ? (
-                <div className="text-gray-500 text-sm mt-6">No similar cases found.</div>
-              ) : (
-                <ul className="space-y-6">
-                  {similarCases.slice(0, 3).map((c) => (
-                    <li key={c.id} className="flex flex-col items-stretch p-0 rounded-xWl bg-white shadow-sm hover:shadow-md transition-shadow">
-                      <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-t-xl overflow-hidden">
-                        <CaseImageCarousel images={c.case_images ?? []} />
-                      </div>
-                      <div className="flex flex-col items-start w-full px-3 py-2 text-xs text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {c.description}
-                      </div>
-                      <div className="flex w-full justify-between items-end px-3 pb-2">
-                        <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                          Similarity: {typeof c.similarity === 'number' ? `${(c.similarity * 100).toFixed(1)}%` : 'N/A'}
-                        </span>
-                        <span className="text-sm font-bold text-green-600 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                          {typeof c.estimation === 'number' ? `${c.estimation}.-` : 'No estimate'}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
+            <Card className="p-0 flex flex-col bg-white rounded-2xl max-h-[80vh]">
+              <ScrollArea style={{ height: '81vh' }}>
+                <div className="p-6">
+                  <div className="flex items-center gap-3 text-l font-bold tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
+                    <TrendingUp className="w-7 h-7 text-blue-400 drop-shadow" />
+                    <span className="drop-shadow">Similar Cases</span>
+                  </div>
+                  {similarCases.length === 0 ? (
+                    <div className="text-gray-500 text-sm mt-6">No similar cases found.</div>
+                  ) : (
+                    <ul className="space-y-6">
+                      {similarCases.slice(0, 3).map((c) => (
+                        <li key={c.id} className="flex flex-col items-stretch p-0 rounded-xWl bg-white shadow-sm hover:shadow-md transition-shadow">
+                          <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-t-xl overflow-hidden">
+                            <CaseImageCarousel images={c.case_images ?? []} />
+                          </div>
+                          <div className="flex flex-col items-start w-full px-3 py-2 text-xs text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            {c.description}
+                          </div>
+                          <div className="flex w-full justify-between items-end px-3 pb-2">
+                            <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                              Similarity: {typeof c.similarity === 'number' ? `${(c.similarity * 100).toFixed(1)}%` : 'N/A'}
+                            </span>
+                            <span className="text-sm font-bold text-green-600 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                              {typeof c.estimation === 'number' ? `${c.estimation}.-` : 'No estimate'}
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </ScrollArea>
             </Card>
           </div>
 
