@@ -6,9 +6,6 @@ export default function Home() {
   return (
     <div className="w-full flex justify-center">
       <div>
-        <div className="py-10 font-bold text-3xl">
-          <h1>Next-Gen Damage Estimation</h1>
-        </div>
         <Tabs defaultValue="cases" className="w-full">
           <TabsList>
             <TabsTrigger value="cases">Cases</TabsTrigger>

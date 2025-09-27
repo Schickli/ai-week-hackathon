@@ -257,7 +257,7 @@ export default function Process() {
           </div>
 
           {(scrapeActive || (caseData && ((Array.isArray(caseData.sources) && caseData.sources.length > 0) || caseData.provider_metadata))) && (
-            <div className="w-1/3 min-w-[160px] max-w-[300px] shadow-2xl rounded-2xl">
+            <div className="w-1/3 min-w-[160px] max-w-[300px] rounded-2xl">
               <Card className="p-6 flex flex-col bg-white rounded-2xl overflow-y-auto">
                 <div className="flex items-center gap-3 text-l font-bold tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
                   <TrendingUp className="w-7 h-7 text-purple-400 drop-shadow" />
