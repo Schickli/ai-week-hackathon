@@ -8,13 +8,13 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel"; // adjust path
+} from "@/components/ui/carousel";
 
 type Props = {
   images: { id: string; image_public_url: string }[];
 };
 
-export default function CaseImageCarousel({ images }: Props) {
+export default function ActiveCaseImageCarousel({ images }: Props) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   // Close with ESC
@@ -36,13 +36,13 @@ export default function CaseImageCarousel({ images }: Props) {
 
   return (
     <div className="w-full flex flex-col">
-      <div className="relative w-full min-h-[16rem] max-h-[26rem]">
-        <Carousel className="w-full h-full min-h-[16rem] max-h-[26rem]">
+      <div className="relative w-full min-h-[28rem] max-h-[28rem]" style={{ height: 'min(48rem, calc(100vh - 200px))' }}>
+        <Carousel className="w-full h-full min-h-[28rem] max-h-[28rem]">
           <CarouselContent>
             {images.map((img, idx) => (
               <CarouselItem key={img.id || idx} className="flex items-center justify-center h-full w-full">
                 <div
-                  className="relative w-full h-full min-h-[16rem] max-h-[26rem] bg-white rounded-t-2xl flex items-center justify-center"
+                  className="relative w-full h-full min-h-[28rem] max-h-[28rem] bg-white rounded-t-2xl flex items-center justify-center"
                 >
                   <Image
                     src={img.image_public_url}
@@ -51,7 +51,7 @@ export default function CaseImageCarousel({ images }: Props) {
                     className="object-contain rounded-t-2xl shadow-lg border-none cursor-pointer"
                     style={{ fontFamily: "Poppins, sans-serif" }}
                     onClick={() => setSelectedIndex(idx)}
-                    sizes="(max-width: 900px) 100vw, 900px"
+                    sizes="(max-width: 1200px) 100vw, 1200px"
                   />
                 </div>
               </CarouselItem>
@@ -78,8 +78,8 @@ export default function CaseImageCarousel({ images }: Props) {
           <Image
             src={images[selectedIndex].image_public_url}
             alt={`Damage ${selectedIndex + 1}`}
-            width={1200}
-            height={800}
+            width={1600}
+            height={1000}
             className="max-h-[90vh] max-w-[90vw] object-contain rounded-xl"
           />
 

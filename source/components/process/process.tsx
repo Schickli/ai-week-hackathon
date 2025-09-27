@@ -5,12 +5,13 @@ import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Progress } from "../ui/progress";
 import { DeclineDialog } from "./decline-dialog";
-import { RefreshCcw, Check, TrendingUp } from "lucide-react"
+import { RefreshCcw, Check, TrendingUp, Brain } from "lucide-react"
 import { GetCaseResponse } from "@/infrastructure/cases/case-repository";
 
 type SimilarCaseWithConfidence = GetCaseResponse & { similarity: number };
 import Image from "next/image";
 import CaseImageCarousel from "./image-carousel";
+import ActiveCaseImageCarousel from "./active-case-image-carousel";
 
 // Removed mockSimilarCases. Will fetch real similar cases from API.
 
@@ -140,12 +141,12 @@ export default function Process() {
         <Progress value={((judgedCount) / (judgedCount + unjudgedCount)) * 100} className="h-4" />
       </div>
 
-      <div className="flex justify-center items-center">
-        <div className="flex w-[90vw] gap-8">
+      <div className="flex justify-center items-start">
+        <div className="flex w-[90vw] gap-8 ">
           {/* Similar Cases Sidebar */}
-          <div className="w-1/3 min-w-[260px] max-w-[400px] shadow-2xl rounded-2xl">
+          <div className="w-1/3 min-w-[160px] max-w-[300px] shadow-2xl rounded-2xl">
             <Card className="p-6 flex flex-col bg-white rounded-2xl max-h-[75vh] overflow-y-auto">
-              <div className="flex items-center gap-3 text-xl font-bold tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
+              <div className="flex items-center gap-3 text-l font-bold tracking-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
                 <TrendingUp className="w-7 h-7 text-blue-400 drop-shadow" />
                 <span className="drop-shadow">Similar Cases</span>
               </div>
@@ -158,14 +159,14 @@ export default function Process() {
                       <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-t-xl overflow-hidden">
                         <CaseImageCarousel images={c.case_images ?? []} />
                       </div>
-                      <div className="flex flex-col items-start w-full px-3 py-2 text-sm text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                      <div className="flex flex-col items-start w-full px-3 py-2 text-xs text-gray-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {c.description}
                       </div>
                       <div className="flex w-full justify-between items-end px-3 pb-2">
                         <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
                           Similarity: {typeof c.similarity === 'number' ? `${(c.similarity * 100).toFixed(1)}%` : 'N/A'}
                         </span>
-                        <span className="text-base font-bold text-green-600 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <span className="text-sm font-bold text-green-600 bg-gray-100 px-2 py-1 rounded-full" style={{ fontFamily: 'Poppins, sans-serif' }}>
                           {typeof c.estimation === 'number' ? `${c.estimation}.-` : 'No estimate'}
                         </span>
                       </div>
@@ -178,9 +179,9 @@ export default function Process() {
 
           {/* Active Case Center */}
           <div className="flex-1 flex flex-col items-center justify-center">
-            <Card className="flex flex-col p-0 w-full max-w-5xl bg-white shadow-2xl rounded-2xl border-none overflow-hidden min-h-[40rem]">
+            <Card className="flex flex-col p-0 w-full max-w-3xl bg-white shadow-2xl rounded-2xl border-none overflow-hidden min-h-[30rem]">
               {loading ? (
-                <div className="flex flex-col items-center justify-center min-h-[22rem] gap-4">
+                <div className="flex flex-col items-center justify-center min-h-[12rem] gap-4">
                   <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
@@ -190,27 +191,39 @@ export default function Process() {
               ) : caseData ? (
                 <>
                   <div className="relative w-full h-auto">
-                    <CaseImageCarousel images={caseData.case_images ?? []} />
+                    <ActiveCaseImageCarousel images={caseData.case_images ?? []} />
                     {caseData.created_at && (
                       <span className="absolute bottom-4 right-8 bg-white/80 px-3 py-1 rounded-lg text-xs font-medium text-gray-600 shadow" style={{ fontFamily: 'var(--font-sans)' }}>
                         {`Created: ${new Date(caseData.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col items-start px-8 py-6">
-                    <span className="text-xl font-bold text-gray-800 tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                      {caseData.description ?? ''}
-                    </span>
-                    {caseData.ai_image_description && (
-                      <span className="text-base font-medium text-purple-700 mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        AI: {caseData.ai_image_description}
+                  <div className="flex flex-col items-start px-8 py-4">
+                    <div className="flex w-full items-center mb-1">
+                      <span className="text-md font-bold text-gray-800 tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        {caseData.description ?? ''}
                       </span>
-                    )}
-                    <div className="mb-4 text-gray-700 text-base" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                      {caseData.category ?? ''}
+                      <div className="flex-1" />
+                      {caseData.category && (
+                        <span className="inline-block px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-xs font-semibold tracking-wide shadow-sm ml-4" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
+                          {caseData.category}
+                        </span>
+                      )}
                     </div>
-                    <div className="mb-2 flex items-center gap-4">
-                      <span className="text-2xl font-extrabold text-blue-600" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    {caseData.ai_image_description && (
+                      <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 mb-2 mt-1 shadow-sm">
+                        <Brain className="w-12 h-12 text-blue-500 mx-2" />
+                        <span className="text-sm text-blue-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                          {caseData.ai_image_description}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex w-full items-center bg-green-50 border border-green-200 rounded-xl px-3 py-2 mb-2 shadow-sm">
+                      <span className="text-sm font-semibold text-green-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        AI Estimated Value
+                      </span>
+                      <div className="flex-1" />
+                      <span className="text-xl font-extrabold text-green-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {caseData.estimation !== null ? `${caseData.estimation}.-` : 'No estimate'}
                       </span>
                     </div>
@@ -244,9 +257,9 @@ export default function Process() {
           </div>
 
           {(scrapeActive || (caseData && ((Array.isArray(caseData.sources) && caseData.sources.length > 0) || caseData.provider_metadata))) && (
-            <div className="w-1/3 min-w-[260px] max-w-[400px] shadow-2xl rounded-2xl">
-              <Card className="p-6 flex flex-col bg-white rounded-2xl max-h-[75vh] overflow-y-auto">
-                <div className="flex items-center gap-3 text-xl font-bold tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
+            <div className="w-1/3 min-w-[160px] max-w-[300px] rounded-2xl">
+              <Card className="p-6 flex flex-col bg-white rounded-2xl overflow-y-auto">
+                <div className="flex items-center gap-3 text-l font-bold tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
                   <TrendingUp className="w-7 h-7 text-purple-400 drop-shadow" />
                   <span className="drop-shadow">Web search results</span>
                 </div>
@@ -278,18 +291,6 @@ export default function Process() {
                             </li>
                           ))}
                         </ul>
-                      </div>
-                    )}
-                    {caseData?.provider_metadata && caseData.provider_metadata.perplexity && Array.isArray(caseData.provider_metadata.perplexity.images) && caseData.provider_metadata.perplexity.images.length > 0 && (
-                      <div className="mt-4">
-                        <div className="text-xs font-bold text-gray-500 mb-1">Provider Images</div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {caseData.provider_metadata.perplexity.images.map((img: any, idx: number) => (
-                            <a key={idx} href={img.originUrl} target="_blank" rel="noopener noreferrer" className="block">
-                              <img src={img.imageUrl} alt="provider" className="w-full h-24 object-cover rounded border" />
-                            </a>
-                          ))}
-                        </div>
                       </div>
                     )}
                   </>
