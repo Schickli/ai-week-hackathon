@@ -146,7 +146,7 @@ export default function Process() {
         <div className="flex w-[90vw] gap-8 ">
           {/* Similar Cases Sidebar */}
           <div className="w-1/3 min-w-[160px] max-w-[300px] shadow-2xl rounded-2xl">
-            <Card className="p-0 flex flex-col bg-white rounded-2xl max-h-[80vh]">
+            <Card className="p-0 flex flex-col bg-white rounded-2xl max-h-[81vh]">
               <ScrollArea style={{ height: '81vh' }}>
                 <div className="p-6">
                   <div className="flex items-center gap-3 text-l font-bold tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
