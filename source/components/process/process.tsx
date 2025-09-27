@@ -201,6 +201,11 @@ export default function Process() {
                     <span className="text-xl font-bold text-gray-800 tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
                       {caseData.description ?? ''}
                     </span>
+                    {caseData.ai_image_description && (
+                      <span className="text-base font-medium text-purple-700 mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        AI: {caseData.ai_image_description}
+                      </span>
+                    )}
                     <div className="mb-4 text-gray-700 text-base" style={{ fontFamily: 'Poppins, sans-serif' }}>
                       {caseData.category ?? ''}
                     </div>
@@ -238,13 +243,12 @@ export default function Process() {
             </div>
           </div>
 
-          {/* Web Price Tool Sidebar (right) */}
-          {scrapeActive && (
-            <div className="w-1/3 min-w-[260px] max-w-[400px] overflow-y-auto shadow-2xl rounded-2xl">
-              <Card className="p-6 h-full flex flex-col bg-white rounded-2xl">
+          {(scrapeActive || (caseData && ((Array.isArray(caseData.sources) && caseData.sources.length > 0) || caseData.provider_metadata))) && (
+            <div className="w-1/3 min-w-[260px] max-w-[400px] shadow-2xl rounded-2xl">
+              <Card className="p-6 flex flex-col bg-white rounded-2xl max-h-[75vh] overflow-y-auto">
                 <div className="flex items-center gap-3 text-xl font-bold tracking-tight mb-2" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}>
                   <TrendingUp className="w-7 h-7 text-purple-400 drop-shadow" />
-                  <span className="drop-shadow">Web Prices</span>
+                  <span className="drop-shadow">Web search results</span>
                 </div>
                 {scrapeLoading ? (
                   <div className="flex flex-col items-center justify-center min-h-[10rem] gap-2">
@@ -256,21 +260,38 @@ export default function Process() {
                   </div>
                 ) : scrapeError ? (
                   <div className="text-red-500 text-sm font-medium">{scrapeError}</div>
-                ) : scrapedPrices.length === 0 ? (
-                  <div className="text-gray-500 text-sm font-medium">No prices found.</div>
                 ) : (
                   <>
-                    {scrapedProduct && (
-                      <div className="mb-2 text-xs text-gray-700 font-semibold">Product: <span className="text-purple-700">{scrapedProduct}</span></div>
+                    {caseData?.sources && Array.isArray(caseData.sources) && caseData.sources.length > 0 && (
+                      <div className="mt-6">
+                        <div className="text-xs font-bold text-gray-500 mb-1">Websearch Sources</div>
+                        <ul className="space-y-2">
+                          {caseData.sources.map((src, idx) => (
+                            <li key={idx} className="text-xs text-blue-700 bg-gray-50 rounded px-2 py-1 break-all">
+                              {src.url ? (
+                                <a href={src.url} target="_blank" rel="noopener noreferrer" className="underline">
+                                  {src.url}
+                                </a>
+                              ) : (
+                                typeof src === 'string' ? src : JSON.stringify(src)
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
-                    <ul className="space-y-4">
-                      {scrapedPrices.map((p, idx) => (
-                        <li key={idx} className="flex flex-col gap-1 p-2 rounded-lg bg-gray-50 shadow-sm">
-                          <span className="font-semibold text-gray-800 text-sm">{p.title}</span>
-                          <span className="font-bold text-purple-600 text-base">{p.price}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    {caseData?.provider_metadata && caseData.provider_metadata.perplexity && Array.isArray(caseData.provider_metadata.perplexity.images) && caseData.provider_metadata.perplexity.images.length > 0 && (
+                      <div className="mt-4">
+                        <div className="text-xs font-bold text-gray-500 mb-1">Provider Images</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {caseData.provider_metadata.perplexity.images.map((img: any, idx: number) => (
+                            <a key={idx} href={img.originUrl} target="_blank" rel="noopener noreferrer" className="block">
+                              <img src={img.imageUrl} alt="provider" className="w-full h-24 object-cover rounded border" />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </Card>
